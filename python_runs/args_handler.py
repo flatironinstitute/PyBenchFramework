@@ -17,6 +17,7 @@ def handle_arguments():
     parser.add_argument('--time', type=int, default=300, help="Number of seconds that FIO should run for.")
     parser.add_argument('--io-type', type=str, required=True, help="write, read, randwrite, randread, among others. Which IO type should FIO issue?")
     parser.add_argument('--platform-type', type=str, required=True, help="Which platform are we using? This will decide output file path as well.")
+    parser.add_argument('--split-file', type=str, required=False, default="False", help="Should the wrapper split the original hosts file into subsections for the different iterations?")
 
     args = parser.parse_args()
     

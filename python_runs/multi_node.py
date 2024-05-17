@@ -6,7 +6,7 @@ import benchmark_tools
 import args_handler
 
 
-root_dir = "/path/to/root/dir"
+root_dir = ""
 args = args_handler.handle_arguments()
 
 job_number = args['slurm_job_number']
@@ -28,12 +28,13 @@ fio_out_dict = {}
 
 i=10
 j=10
-proc = [1, 5, 10, 15] 
-files = [1, 2, 4, 6, 8, 10]
-nodes = [1, 2, 4, 6, 8, 10]
+proc = [15, 10, 5, 1] 
+files = [15, 10, 5, 1]
+nodes = [10, 8, 6, 4, 2, 1]
 set_noscrub = 0
 
-benchmark_tools.create_node_list(nodes, host_filename, root_dir, job_number)
+if (args['split_file'] == "True"):
+    benchmark_tools.create_node_list(nodes, host_filename, root_dir, job_number)
 
 config_template_path = f"{root_dir}/examples/template/template.fio"
 #old_proc = proc[0]
