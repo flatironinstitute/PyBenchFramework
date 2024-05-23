@@ -87,7 +87,14 @@ class BenchmarkTool(ABC):
         #self.set_noscrub()
         
         #Execute the constructed benchmark command.
-        result = subprocess.run(self.command, capture_output=True, text=True, check=True)
+        try:
+            result = subprocess.run(self.command, capture_output=True, text=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print("Error occurred:")
+            print(f"Return code: {e.returncode}")
+            print("Standard Error output:")
+            print(e.stderr)
+
         if self.output_format == "json" and 'output' in self.params:
             output_file = self.params['output_file']
             max_retries = 3
