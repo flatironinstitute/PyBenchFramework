@@ -4,9 +4,10 @@ from datetime import datetime
 import sys
 import benchmark_tools
 import args_handler
+import miscellaneous
 
 
-root_dir = ""
+root_dir = "/mnt/home/skrit/Documents/benchmark_handler"
 args = args_handler.handle_arguments()
 
 job_number = args['slurm_job_number']
@@ -28,8 +29,8 @@ fio_out_dict = {}
 
 i=10
 j=10
-proc = [15, 10, 5, 1] 
-files = [15, 10, 5, 1]
+proc = [25, 20, 15, 10] 
+files = [25, 20, 15, 10]
 nodes = [10, 8, 6, 4, 2, 1]
 set_noscrub = 0
 
@@ -47,6 +48,10 @@ fio_scrub = handler_class.FIOTool()
 if set_noscrub == 0:
     fio_scrub.set_noscrub()
     set_noscrub = 1
+
+log_dir = f"{root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
+
+miscellaneous.ensure_log_directory_exists(log_dir,1)
 
 for node_count in nodes:
 
@@ -70,7 +75,7 @@ for node_count in nodes:
         
         fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"] = handler_class.FIOTool()
         
-        fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].setup_command(config_file=f"{root_dir}/examples/test_files/multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio", output_format="json", output_file=f"{root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json", host_file=f"{root_dir}/host_files/{job_number}_{node_count}_hosts.file")
+        fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].setup_command(config_file=f"{root_dir}/examples/test_files/multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio", output_format="json", output_file=f"{log_dir}/{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json", host_file=f"{root_dir}/host_files/{job_number}_{node_count}_hosts.file")
         
         with open(f"{root_dir}/results/{args['io_type']}/{args['platform_type']}/commands/{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['platform_type']}_command", 'a') as file:
             file.write(f"num nodes is {node_count}")
