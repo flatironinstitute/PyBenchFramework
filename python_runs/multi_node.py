@@ -7,7 +7,14 @@ import args_handler
 import miscellaneous
 
 
-root_dir = "/mnt/home/skrit/Documents/benchmark_handler"
+var_name = "PyBench_root_dir"
+
+try:
+    PyBench_root_dir = os.environ[var_name]
+    print(f"{var_name} = {PyBench_root_dir}")
+except KeyError:
+    print(f"{var_name} is not set")
+
 args = args_handler.handle_arguments()
 
 job_number = args['slurm_job_number']
@@ -15,7 +22,7 @@ job_number = args['slurm_job_number']
 # Process the argument
 print(f"Received slurm job number: {job_number}")
 
-host_filename = f"{root_dir}/host_files/{job_number}_hosts.file"
+host_filename = f"{PyBench_root_dir}/host_files/{job_number}_hosts.file"
 
 # Count the number of lines in the job hosts file
 line_count = benchmark_tools.count_lines(host_filename)
@@ -35,9 +42,9 @@ nodes = [10, 8, 6, 4, 2, 1]
 set_noscrub = 0
 
 if (args['split_file'] == "True"):
-    benchmark_tools.create_node_list(nodes, host_filename, root_dir, job_number)
+    benchmark_tools.create_node_list(nodes, host_filename, PyBench_root_dir, job_number)
 
-config_template_path = f"{root_dir}/examples/template/template.fio"
+config_template_path = f"{PyBench_root_dir}/examples/template/template.fio"
 #old_proc = proc[0]
 #old_files = files[0]
 #old_nodes = nodes[0]
@@ -49,7 +56,7 @@ if set_noscrub == 0:
     fio_scrub.set_noscrub()
     set_noscrub = 1
 
-log_dir = f"{root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
+log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
 
 miscellaneous.ensure_log_directory_exists(log_dir,1)
 
@@ -75,9 +82,9 @@ for node_count in nodes:
         
         fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"] = handler_class.FIOTool()
         
-        fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].setup_command(config_file=f"{root_dir}/examples/test_files/multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio", output_format="json", output_file=f"{log_dir}/{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json", host_file=f"{root_dir}/host_files/{job_number}_{node_count}_hosts.file")
+        fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].setup_command(config_file=f"{PyBench_root_dir}/examples/test_files/multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio", output_format="json", output_file=f"{log_dir}/{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json", host_file=f"{PyBench_root_dir}/host_files/{job_number}_{node_count}_hosts.file")
         
-        with open(f"{root_dir}/results/{args['io_type']}/{args['platform_type']}/commands/{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['platform_type']}_command", 'a') as file:
+        with open(f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/commands/{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['platform_type']}_command", 'a') as file:
             file.write(f"num nodes is {node_count}")
             tmp_cmd_string = ""
             for cmd_el in fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].command:
