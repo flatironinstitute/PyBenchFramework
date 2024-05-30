@@ -89,6 +89,9 @@ class BenchmarkTool(ABC):
         #Execute the constructed benchmark command.
         try:
             result = subprocess.run(self.command, capture_output=True, text=True, check=True)
+            # Print standard output if the command succeeds
+            print("Standard Output:")
+            print(result.stdout)
         except subprocess.CalledProcessError as e:
             print("Error occurred:")
             print(f"Return code: {e.returncode}")

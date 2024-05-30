@@ -7,13 +7,14 @@ import args_handler
 import miscellaneous
 
 
-var_name = "PyBench_root_dir"
+#var_name = "PyBench_root_dir"
 
-try:
-    PyBench_root_dir = os.environ[var_name]
-    print(f"{var_name} = {PyBench_root_dir}")
-except KeyError:
-    print(f"{var_name} is not set")
+#try:
+#    PyBench_root_dir = os.environ[var_name]
+#    print(f"{var_name} = {PyBench_root_dir}")
+#except KeyError:
+#    print(f"{var_name} is not set")
+PyBench_root_dir="/mnt/home/skrit/Documents/benchmark_handler"
 
 args = args_handler.handle_arguments()
 
@@ -41,8 +42,8 @@ files = [25, 20, 15, 10]
 nodes = [10, 8, 6, 4, 2, 1]
 set_noscrub = 0
 
-if (args['split_file'] == "True"):
-    benchmark_tools.create_node_list(nodes, host_filename, PyBench_root_dir, job_number)
+if args['split_hosts_file']:
+    benchmark_tools.create_node_list(args['split_hosts_file'], host_filename, PyBench_root_dir, job_number)
 
 config_template_path = f"{PyBench_root_dir}/examples/template/template.fio"
 #old_proc = proc[0]
