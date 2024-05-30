@@ -37,8 +37,8 @@ fio_out_dict = {}
 
 i=10
 j=10
-proc = [25, 20, 15, 10] 
-files = [25, 20, 15, 10]
+proc = [15, 10, 5, 1] 
+files = [15, 10, 5, 1]
 nodes = [10, 8, 6, 4, 2, 1]
 set_noscrub = 0
 
