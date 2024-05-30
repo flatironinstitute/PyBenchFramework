@@ -7,11 +7,21 @@ def count_lines(filename):
             line_count += 1
     return line_count
 
-def create_node_list(node_count_list, filename, root_dir, job_num):
+def create_node_list(node_string, filename, root_dir, job_num):
     
-    nodes_per_iteration = {}
     node_list = []
+    node_count_list = []
     
+    try:
+        string_num_list = node_string.split(",")
+        node_count_list = [int(num) for num in string_num_list]
+    except ValueError as ve:
+        print("ValueError: {ve}. Please ensure the input string for --split-hosts-file contains only numbers separated by commas.")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occured: {e}")
+        return None
+
     with open(filename, 'r') as file:
         for node_name in file:
             stripped_name = node_name.strip()
@@ -24,4 +34,3 @@ def create_node_list(node_count_list, filename, root_dir, job_num):
                 file.write(f"{node_list[i]}\n")
                 i += 1
 
-    #return nodes_per_iteration
