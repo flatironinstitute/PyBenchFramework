@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ~/python_environments/computer_vision/bin/activate
+source ~/fio_tmp/env_start.sh
+export PyBench_root_dir="/mnt/home/skrit/Documents/benchmark_handler"
