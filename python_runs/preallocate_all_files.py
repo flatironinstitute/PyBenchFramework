@@ -41,7 +41,7 @@ set_noscrub = 0
 if args['split_hosts_file']:
     benchmark_tools.create_node_list(args['split_hosts_file'], host_filename, PyBench_root_dir, job_number)
 
-config_template_path = f"{PyBench_root_dir}/examples/template/template.fio"
+config_template_path = f"{PyBench_root_dir}/examples/template/starting_template.fio"
 
 fio_scrub = handler_class.FIOTool()
 
@@ -74,14 +74,15 @@ for node_count in nodes:
         
         fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].setup_command(config_file=f"{PyBench_root_dir}/examples/test_files/multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio", output_format="json", output_file=f"{log_dir}/{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json", host_file=f"{PyBench_root_dir}/host_files/{job_number}_{node_count}_hosts.file")
         
-        with open(f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/commands/{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['platform_type']}_command", 'a') as file:
-            file.write(f"num nodes is {node_count}")
-            tmp_cmd_string = ""
-            for cmd_el in fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].command:
-                tmp_cmd_string += f" {cmd_el}"
-            file.write(tmp_cmd_string)
-        
         fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].run()
+        
+        log_file_path = f"{log_dir}/{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json"
+
+        if os.path.exists(log_file_path):
+            os.remove(log_file_path)
+            print(f"File {log_file_path} has been removed.")
+        else:
+            print(f"File {log_file_path} does not exist.")
         
         print(f"Job num: {job_count}, node count: {node_count}. Iteration is finished.")
 

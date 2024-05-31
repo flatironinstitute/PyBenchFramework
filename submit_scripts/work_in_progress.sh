@@ -7,14 +7,14 @@
 #SBATCH --reservation=ceph_test
 #SBATCH --time=40:00:00
 
-root_dir="/mnt/home/skrit/Documents/benchmark_handler/"
+root_dir="/mnt/home/skrit/Documents/PyBenchFramework"
 
 filename="${root_dir}/host_files/${SLURM_JOB_ID}_hosts.file"
 
 if [[ -f $filename ]]; then rm $filename; fi
 
 
-pdsh -w $SLURM_JOB_NODELIST "source /mnt/home/skrit/Documents/benchmark_handler/env_start; IP=\$(ip a | grep 147 | awk '{print \$2}' | cut -d / -f 1 | head -n1); echo \"\${IP},5201\" >> ${filename}; fio --server=\"\${IP},5201\"" &
+pdsh -w $SLURM_JOB_NODELIST "source ${root_dir}/env_start; IP=\$(ip a | grep 147 | awk '{print \$2}' | cut -d / -f 1 | head -n1); echo \"\${IP},5201\" >> ${filename}; fio --server=\"\${IP},5201\"" &
 
 sleep 15
 

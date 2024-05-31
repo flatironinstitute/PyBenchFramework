@@ -1,0 +1,10 @@
+slurm_job_number: 
+block_size: 4k
+directory: /mnt/cephtest/test-ec63/skrit/fio-test/tmp  
+job_number: 10
+time: 600
+io_type: write
+platform_type: triple_replicated 
+split_hosts_file: 1
+job_number: 15,10,5,1
+node_count: 1

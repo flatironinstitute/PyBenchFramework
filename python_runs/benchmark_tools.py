@@ -12,15 +12,7 @@ def create_node_list(node_string, filename, root_dir, job_num):
     node_list = []
     node_count_list = []
     
-    try:
-        string_num_list = node_string.split(",")
-        node_count_list = [int(num) for num in string_num_list]
-    except ValueError as ve:
-        print("ValueError: {ve}. Please ensure the input string for --split-hosts-file contains only numbers separated by commas.")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occured: {e}")
-        return None
+    node_count_list = split_arg_sequence(str(node_string), '--split-host-file')
 
     with open(filename, 'r') as file:
         for node_name in file:
@@ -34,3 +26,17 @@ def create_node_list(node_string, filename, root_dir, job_num):
                 file.write(f"{node_list[i]}\n")
                 i += 1
 
+def split_arg_sequence(sequence, arg):
+    sequence_list = []
+
+    try:
+        string_sequence_list = sequence.split(",")
+        sequence_list = [int(num) for num in string_sequence_list]
+    except ValueError as ve:
+        print(f"ValueError: {ve}. Please ensure the input string for {arg} contains only numbers separated by commas.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"An unexpected error occured: {e} \n {arg}")
+        sys.exit(1)
+
+    return sequence_list
