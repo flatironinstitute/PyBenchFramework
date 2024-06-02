@@ -1,5 +1,6 @@
 import argparse
 import yaml
+import sys
 
 #slurm job number
 # triple replicated vs EC63 - FIO directory option
@@ -32,6 +33,8 @@ def handle_arguments():
     parser.add_argument('--io-type', type=str, help="write, read, randwrite, randread, among others. Which IO type should FIO issue?")
     parser.add_argument('--platform-type', type=str, help="Which platform are we using? This will decide output file path as well.")
     parser.add_argument('--split-hosts-file', type=str, help="Should the wrapper split the original hosts file into subsections for the different iterations?")
+    parser.add_argument('--hosts-file', type=str, help="Path to the intial hosts file which contains all hosts (At least FIO servers) involved.")
+    parser.add_argument('--no-scrub', type=bool, help="(Ceph only) set noscrub and nodeepscrub flags on the ceph system. Requires passwordless SSH to the Ceph servers")
 
     args = parser.parse_args()
     args_dict = vars(args)
@@ -47,10 +50,11 @@ def handle_arguments():
 
     # Set defaults if not provided
     merged_dict.setdefault('time', 300)
+    merged_dict.setdefault('no-scrub', 0)
     merged_dict.setdefault('split_hosts_file', False)
 
     # Check for required arguments
-    required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count']
+    required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'hosts_file']
     missing_args = [arg for arg in required_args if arg not in merged_dict or merged_dict[arg] is None]
 
     if missing_args:

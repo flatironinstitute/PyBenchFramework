@@ -19,14 +19,8 @@ args = args_handler.handle_arguments()
 
 job_number = args['slurm_job_number']
 
-# Process the argument
-print(f"Received slurm job number: {job_number}")
-
-host_filename = f"{PyBench_root_dir}/host_files/{job_number}_hosts.file"
-
 # Count the number of lines in the job hosts file
-line_count = benchmark_tools.count_lines(host_filename)
-print(f"Host file line count is: {line_count}")
+line_count = benchmark_tools.count_lines(args['hosts_file'])
 
 current_dir = os.getcwd()
 
@@ -36,18 +30,18 @@ fio_out_dict = {}
 proc = benchmark_tools.split_arg_sequence(args['job_number'], '--job-number') 
 nodes = benchmark_tools.split_arg_sequence(str(args['node_count']), '--node-count')
 files = nodes.copy()
-set_noscrub = 0
+
+set_noscrub = args['no-scrub']
 
 if args['split_hosts_file']:
-    benchmark_tools.create_node_list(args['split_hosts_file'], host_filename, PyBench_root_dir, job_number)
+    benchmark_tools.create_node_list(args['split_hosts_file'], args['hosts_file'], PyBench_root_dir, job_number)
 
 config_template_path = f"{PyBench_root_dir}/examples/template/starting_template.fio"
 
 fio_scrub = handler_class.FIOTool()
 
-if set_noscrub == 0:
+if set_noscrub == 1:
     fio_scrub.set_noscrub()
-    set_noscrub = 1
 
 log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
 
@@ -78,12 +72,14 @@ for node_count in nodes:
         
         log_file_path = f"{log_dir}/{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json"
 
+        '''
         if os.path.exists(log_file_path):
             os.remove(log_file_path)
             print(f"File {log_file_path} has been removed.")
         else:
             print(f"File {log_file_path} does not exist.")
-        
+        '''
+
         print(f"Job num: {job_count}, node count: {node_count}. Iteration is finished.")
 
 if set_noscrub == 1:
