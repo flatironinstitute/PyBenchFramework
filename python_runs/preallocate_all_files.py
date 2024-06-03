@@ -34,9 +34,12 @@ files = nodes.copy()
 set_noscrub = args['no-scrub']
 
 if args['split_hosts_file']:
-    benchmark_tools.create_node_list(args['split_hosts_file'], args['hosts_file'], PyBench_root_dir, job_number)
+    benchmark_tools.create_node_list(args['node_count'], args['hosts_file'], PyBench_root_dir, job_number)
 
 config_template_path = f"{PyBench_root_dir}/examples/template/starting_template.fio"
+
+with open(config_template_path, 'r') as file:
+    original_file_contents = file.read()
 
 fio_scrub = handler_class.FIOTool()
 
@@ -49,17 +52,19 @@ miscellaneous.ensure_log_directory_exists(log_dir,1)
 
 for node_count in nodes:
 
-    with open(config_template_path, 'r') as file:
-        file_contents = file.read()
 
     for job_count in proc:
         
         file_count = job_count
-        
+
+        # Reset file_contents to the original template for each iteration
+        file_contents = original_file_contents
+
         file_contents = file_contents.replace("__block_size__", args['block_size'])
-        file_contents = file_contents.replace("__number_of_jobs__", str(job_count))
+        file_contents = file_contents.replace("__number_of_jobs__", f"{job_count}")
         file_contents = file_contents.replace("__dir_var__", args['directory'])
         file_contents = file_contents.replace("__io_type_var__", args['io_type'])
+        file_contents = file_contents.replace("__time_var__",f"{args['time']}")
         
         with open(f"examples/test_files/multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio", 'w') as file:
             file.write(file_contents)

@@ -32,7 +32,7 @@ def handle_arguments():
     parser.add_argument('--time', type=int, help="Number of seconds that FIO should run for.")
     parser.add_argument('--io-type', type=str, help="write, read, randwrite, randread, among others. Which IO type should FIO issue?")
     parser.add_argument('--platform-type', type=str, help="Which platform are we using? This will decide output file path as well.")
-    parser.add_argument('--split-hosts-file', type=str, help="Should the wrapper split the original hosts file into subsections for the different iterations?")
+    parser.add_argument('--split-hosts-file', type=bool, help="Should the wrapper split the original hosts file into subsections for the different iterations?")
     parser.add_argument('--hosts-file', type=str, help="Path to the intial hosts file which contains all hosts (At least FIO servers) involved.")
     parser.add_argument('--no-scrub', type=bool, help="(Ceph only) set noscrub and nodeepscrub flags on the ceph system. Requires passwordless SSH to the Ceph servers")
 

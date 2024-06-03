@@ -20,57 +20,52 @@ sleep 20
 
 if [[ -f ${filename} ]]; then
 	#starting run to lay out all files
-	python python_runs/preallocate_all_files.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "write" --platform-type EC63 --split-hosts-file "1,2,4,6,8,10" 
+	#python python_runs/preallocate_all_files.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --split-hosts-file 1 --node-count 10,8,6,4,2,1 --hosts-file "${filename}" --config python_runs/EC63_config.yml 
 	
 	#starting run to lay out all files
-	python python_runs/preallocate_all_files.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "write" --platform-type triple_replicated 
+	#python python_runs/preallocate_all_files.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml 
 
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4K --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "randread" --platform-type triple_replicated
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4K --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 	
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4K --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "randread" --platform-type EC63
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4K --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
-	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 64K --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "randread" --platform-type triple_replicated 
-
-	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 64K --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "randread" --platform-type EC63 
-
-	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "randread" --platform-type triple_replicated
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 64K --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 	
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "randread" --platform-type EC63
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 64K --hosts-file "${filename}" --config python_runs/EC63_config.yml
+
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 	
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4K --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "randwrite" --platform-type triple_replicated
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
+	
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 4K --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 	
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4K --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "randwrite" --platform-type EC63
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 4K --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
-	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 64K --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "randwrite" --platform-type triple_replicated
-
-	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 64K --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "randwrite" --platform-type EC63 
-
-	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "randwrite" --platform-type triple_replicated
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 64K --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 	
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "randwrite" --platform-type EC63
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 64K --hosts-file "${filename}" --config python_runs/EC63_config.yml
+
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
+	
+	#if [[ -f $filename ]]; then rm $filename; fi
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "read" --platform-type triple_replicated 
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "read" --platform-type EC63 
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-rep3/skrit/fio/tmp/ --io-type "write" --platform-type triple_replicated
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "write" --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --directory /mnt/cephtest/test-ec63/skrit/fio-test/tmp/ --io-type "write" --platform-type EC63
+	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "write" --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 
 else
 	echo "File ${filename} creation failed... Exiting."

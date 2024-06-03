@@ -10,7 +10,7 @@ bs=__block_size__
 end_fsync=1
 invalidate=1
 #iodepth=256
-runtime=180
+runtime=__time_var__
 overwrite=1
 numjobs=__number_of_jobs__
 time_based
