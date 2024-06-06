@@ -31,12 +31,11 @@ proc = benchmark_tools.split_arg_sequence(args['job_number'], '--job-number')
 nodes = benchmark_tools.split_arg_sequence(str(args['node_count']), '--node-count')
 files = nodes.copy()
 
-set_noscrub = args['no-scrub']
+set_noscrub = args['no_scrub']
 
 if args['split_hosts_file']:
     benchmark_tools.create_node_list(args['node_count'], args['hosts_file'], PyBench_root_dir, job_number)
 
-#config_template_path = f"{PyBench_root_dir}/examples/template/template.fio"
 config_template_path = args['template_path']
 
 with open(config_template_path, 'r') as file:
@@ -48,8 +47,10 @@ if set_noscrub == 1:
     fio_scrub.set_noscrub()
 
 log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
+command_log_dir = f"{log_dir}/commands"
 
 miscellaneous.ensure_log_directory_exists(log_dir,1)
+miscellaneous.ensure_log_directory_exists(command_log_dir,1)
 
 for node_count in nodes:
 
@@ -60,7 +61,6 @@ for node_count in nodes:
 
         # Reset file_contents to the original template for each iteration
         file_contents = original_file_contents
-        
         file_contents = file_contents.replace("__block_size__", args['block_size'])
         file_contents = file_contents.replace("__number_of_jobs__", f"{job_count}")
         file_contents = file_contents.replace("__dir_var__", args['directory'])
@@ -74,7 +74,7 @@ for node_count in nodes:
         
         fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].setup_command(config_file=f"{PyBench_root_dir}/examples/test_files/multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio", output_format="json", output_file=f"{log_dir}/{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json", host_file=f"{PyBench_root_dir}/host_files/{job_number}_{node_count}_hosts.file")
         
-        with open(f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/commands/{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['platform_type']}_command", 'a') as file:
+        with open(f"{command_log_dir}/{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['platform_type']}_command", 'a') as file:
             file.write(f"num nodes is {node_count}, job number is {job_count}")
             tmp_cmd_string = ""
             for cmd_el in fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].command:

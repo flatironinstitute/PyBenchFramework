@@ -31,12 +31,12 @@ proc = benchmark_tools.split_arg_sequence(args['job_number'], '--job-number')
 nodes = benchmark_tools.split_arg_sequence(str(args['node_count']), '--node-count')
 files = nodes.copy()
 
-set_noscrub = args['no-scrub']
+set_noscrub = args['no_scrub']
 
 if args['split_hosts_file']:
     benchmark_tools.create_node_list(args['node_count'], args['hosts_file'], PyBench_root_dir, job_number)
 
-config_template_path = f"{PyBench_root_dir}/examples/template/starting_template.fio"
+config_template_path = args['template_path']
 
 with open(config_template_path, 'r') as file:
     original_file_contents = file.read()
@@ -47,8 +47,10 @@ if set_noscrub == 1:
     fio_scrub.set_noscrub()
 
 log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
+command_log_dir = f"{log_dir}/commands"
 
 miscellaneous.ensure_log_directory_exists(log_dir,1)
+miscellaneous.ensure_log_directory_exists(command_log_dir,1)
 
 for node_count in nodes:
 
@@ -59,7 +61,6 @@ for node_count in nodes:
 
         # Reset file_contents to the original template for each iteration
         file_contents = original_file_contents
-
         file_contents = file_contents.replace("__block_size__", args['block_size'])
         file_contents = file_contents.replace("__number_of_jobs__", f"{job_count}")
         file_contents = file_contents.replace("__dir_var__", args['directory'])
