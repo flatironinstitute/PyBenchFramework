@@ -36,7 +36,8 @@ set_noscrub = args['no-scrub']
 if args['split_hosts_file']:
     benchmark_tools.create_node_list(args['node_count'], args['hosts_file'], PyBench_root_dir, job_number)
 
-config_template_path = f"{PyBench_root_dir}/examples/template/template.fio"
+#config_template_path = f"{PyBench_root_dir}/examples/template/template.fio"
+config_template_path = args['template_path']
 
 with open(config_template_path, 'r') as file:
     original_file_contents = file.read()
