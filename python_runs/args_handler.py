@@ -51,7 +51,7 @@ def handle_arguments():
 
     # Set defaults if not provided
     merged_dict.setdefault('time', 300)
-    merged_dict.setdefault('no-scrub', 0)
+    merged_dict.setdefault('no_scrub', 0)
     merged_dict.setdefault('split_hosts_file', False)
 
     # Check for required arguments
