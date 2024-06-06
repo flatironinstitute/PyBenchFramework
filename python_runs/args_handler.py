@@ -35,6 +35,7 @@ def handle_arguments():
     parser.add_argument('--split-hosts-file', type=bool, help="Should the wrapper split the original hosts file into subsections for the different iterations?")
     parser.add_argument('--hosts-file', type=str, help="Path to the intial hosts file which contains all hosts (At least FIO servers) involved.")
     parser.add_argument('--no-scrub', type=bool, help="(Ceph only) set noscrub and nodeepscrub flags on the ceph system. Requires passwordless SSH to the Ceph servers")
+    parser.add_argument('--template-path', type=str, help="The path to the FIO template")
 
     args = parser.parse_args()
     args_dict = vars(args)
@@ -54,7 +55,7 @@ def handle_arguments():
     merged_dict.setdefault('split_hosts_file', False)
 
     # Check for required arguments
-    required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'hosts_file']
+    required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'hosts_file', 'template_path']
     missing_args = [arg for arg in required_args if arg not in merged_dict or merged_dict[arg] is None]
 
     if missing_args:
