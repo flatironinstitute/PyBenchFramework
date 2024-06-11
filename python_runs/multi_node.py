@@ -84,6 +84,7 @@ for node_count in nodes:
         fio_ob_dict[f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"].run()
         
         print(f"Job num: {job_count}, node count: {node_count}. Iteration is finished.")
+        sys.stdout.flush()
 
 if set_noscrub == 1:
     fio_scrub.set_scrub()

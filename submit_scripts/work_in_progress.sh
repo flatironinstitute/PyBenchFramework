@@ -2,7 +2,6 @@
 #SBATCH -o logs/pi-%j.log
 #SBATCH -e logs/pi-%j.err
 #SBATCH -p scc
-#SBATCH --ntasks-per-node=20
 #SBATCH --nodes=10
 #SBATCH --reservation=ceph_test
 #SBATCH --time=40:00:00

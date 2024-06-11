@@ -7,7 +7,7 @@ unique_filename=0
 filename_format=$clientuid.$jobnum
 group_reporting
 bs=__block_size__
-end_fsync=1
+fsync=100
 invalidate=1
 #iodepth=256
 runtime=__time_var__

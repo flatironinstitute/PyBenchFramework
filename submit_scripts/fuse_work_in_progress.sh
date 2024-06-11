@@ -2,7 +2,6 @@
 #SBATCH -o logs/pi-%j.log
 #SBATCH -e logs/pi-%j.err
 #SBATCH -p scc
-#SBATCH --ntasks-per-node=20
 #SBATCH --nodes=10
 #SBATCH --reservation=ceph_test
 #SBATCH --time=40:00:00
@@ -42,7 +41,7 @@ if [[ -f ${filename} ]]; then
 	#starting run to lay out all files
 	#python python_runs/preallocate_all_files.py --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml 
 
-	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4K --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
+	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4K --hosts-file "${filename}" --split-hosts-file 1 --node-count 10,8,6,4,2,1 --config python_runs/triple_rep_config.yml
 	
 	#if [[ -f $filename ]]; then rm $filename; fi
 	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4K --hosts-file "${filename}" --config python_runs/EC63_config.yml
@@ -52,7 +51,7 @@ if [[ -f ${filename} ]]; then
 	#if [[ -f $filename ]]; then rm $filename; fi
 	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 64K --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
-	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
+	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml --split-hosts-file 1 --node-count 10,8,6,4,2,1
 	
 	#if [[ -f $filename ]]; then rm $filename; fi
 	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randread --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
@@ -70,19 +69,19 @@ if [[ -f ${filename} ]]; then
 	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 	
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
+	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type randwrite --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
+	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
+	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "write" --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
+	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "write" --block-size 4M --hosts-file "${filename}" --config python_runs/EC63_config.yml
 
 	#if [[ -f $filename ]]; then rm $filename; fi
-	python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "write" --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
+	#python python_runs/multi_node.py --slurm-job-number ${SLURM_JOB_ID} --io-type "write" --block-size 4M --hosts-file "${filename}" --config python_runs/triple_rep_config.yml
 
 else
 	echo "File ${filename} creation failed... Exiting."

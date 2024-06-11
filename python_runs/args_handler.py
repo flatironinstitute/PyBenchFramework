@@ -62,5 +62,5 @@ def handle_arguments():
         print(f"Error: Missing required arguments: {', '.join(missing_args)}")
         sys.exit(1)
     
-    print(merged_dict)
+    #print(merged_dict)
     return merged_dict
