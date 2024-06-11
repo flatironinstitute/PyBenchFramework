@@ -6,6 +6,9 @@ import os
 from execute_ssh import execute_ssh_command
 import re
 import shlex
+from datetime import datetime
+import time
+import sys
 
 class BenchmarkTool(ABC):
     def __init__(self):
@@ -88,15 +91,21 @@ class BenchmarkTool(ABC):
         
         #Execute the constructed benchmark command.
         try:
+            start_time = time.time()
             result = subprocess.run(self.command, capture_output=True, text=True, check=True)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+
             # Print standard output if the command succeeds
-            print("Standard Output:")
+            print(datetime.now().time(), f"Time to complete: {elapsed_time}, Standard Output:")
             print(result.stdout)
+            sys.stdout.flush()
         except subprocess.CalledProcessError as e:
             print("Error occurred:")
             print(f"Return code: {e.returncode}")
             print("Standard Error output:")
             print(e.stderr)
+            sys.stdout.flush()
 
         if self.output_format == "json" and 'output' in self.params:
             output_file = self.params['output_file']
@@ -110,7 +119,7 @@ class BenchmarkTool(ABC):
                 print("...Waiting for output file...")
                 attempts += 1
             print("Output file not found after several attempts.")
-        
+            sys.stdout.flush()
         #turn scrubbing back on
         #self.set_scrub()
         
