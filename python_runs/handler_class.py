@@ -9,6 +9,8 @@ import shlex
 from datetime import datetime
 import time
 import sys
+import psutil
+import threading
 
 class BenchmarkTool(ABC):
     def __init__(self):
@@ -59,7 +61,6 @@ class BenchmarkTool(ABC):
             print( execute_ssh_command('cephmon900', 'ceph', 'ceph osd set noscrub' ) )
             print( execute_ssh_command('cephmon900', 'ceph', 'ceph osd set nodeep-scrub' ) )
 
-    
     def set_scrub(self):
         
         noScrub = 0
@@ -84,11 +85,40 @@ class BenchmarkTool(ABC):
                 execute_ssh_command('cephmon900', 'ceph', 'ceph osd unset nodeep-scrub' )
         else:
             print ("noscrub was unset before this module completed, please ensure that is intended...")
-    
+    '''
+    def track_net_traffic(self):
+        def calculate_net_rate(interval=1):
+            old_stats = psutil.net_io_counters()
+            time.sleep(interval)
+            new_stats = psutil.net_io_counters()
+
+            bytes_sent_per_sec = (new_stats.bytes_sent - old_stats.bytes_sent) / interval
+            bytes_recv_per_sec = (new_stats.bytes_recv - old_stats.bytes_recv) / interval
+
+            return bytes_sent_per_sec, bytes_recv_per_sec
+
+        def convert_to_gbps(bytes_per_sec):
+            GBPS_CONVERSION = 1_073_741_824  # Bytes in 1 Gigabyte
+            return bytes_per_sec / GBPS_CONVERSION
+
+        with open(self.log_file, 'a') as f:
+            while True:
+                bytes_sent, bytes_recv = calculate_net_rate()
+                gb_sent = convert_to_gbps(bytes_sent)
+                gb_recv = convert_to_gbps(bytes_recv)
+                timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                f.write(f"{timestamp}, GB Sent/sec: {gb_sent:.6f}, GB Received/sec: {gb_recv:.6f}\n")
+                f.flush()
+    '''
+
     def run(self):
-        """set scrubbing off"""
-        #self.set_noscrub()
         
+         # Define a thread for tracking network traffic
+        #net_thread = threading.Thread(target=self.track_net_traffic)
+        #net_thread.daemon = True  # Daemonize thread to ensure it exits when the main thread does
+        
+        #net_thread.start()
+
         #Execute the constructed benchmark command.
         try:
             start_time = time.time()

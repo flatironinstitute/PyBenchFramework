@@ -36,6 +36,8 @@ def handle_arguments():
     parser.add_argument('--hosts-file', type=str, help="Path to the intial hosts file which contains all hosts (At least FIO servers) involved.")
     parser.add_argument('--no-scrub', type=bool, help="(Ceph only) set noscrub and nodeepscrub flags on the ceph system. Requires passwordless SSH to the Ceph servers")
     parser.add_argument('--template-path', type=str, help="The path to the FIO template")
+    parser.add_argument('--first-node', type=str, help="The first node in the node list. Will execute some preperatory steps on this node")
+    parser.add_argument('--interface-name', type=str, help="The interface you want to monitor for inbound and outbound counters")
 
     args = parser.parse_args()
     args_dict = vars(args)
@@ -53,9 +55,12 @@ def handle_arguments():
     merged_dict.setdefault('time', 300)
     merged_dict.setdefault('no_scrub', 0)
     merged_dict.setdefault('split_hosts_file', False)
+    merged_dict.setdefault('interface_name', '')
 
     # Check for required arguments
-    required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'hosts_file', 'template_path']
+    #Trying a run without a hosts file to see if independent runs work
+    #required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'hosts_file', 'template_path']
+    required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'template_path']
     missing_args = [arg for arg in required_args if arg not in merged_dict or merged_dict[arg] is None]
 
     if missing_args:

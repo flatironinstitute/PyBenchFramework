@@ -26,17 +26,36 @@ def create_node_list(node_string, filename, root_dir, job_num):
                 file.write(f"{node_list[i]}\n")
                 i += 1
 
+
+def create_node_list_file(node_string, filename, root_dir, job_num):
+    
+    node_list = []
+    node_count_list = []
+    
+    node_count_list = split_arg_sequence(str(node_string), '--split-host-file')
+    
+    with open(filename, 'r') as file:
+        for node_name in file:
+            stripped_name = node_name.strip()
+            node_list.append(f"{stripped_name}")
+    
+    return node_list
+
 def split_arg_sequence(sequence, arg):
     sequence_list = []
 
     try:
-        string_sequence_list = sequence.split(",")
-        sequence_list = [int(num) for num in string_sequence_list]
+        sequence_str = str(sequence)  # Ensure sequence is treated as a string
+        if "," in sequence_str:
+            string_sequence_list = sequence_str.split(",")
+            sequence_list = [int(num) for num in string_sequence_list]
+        else:
+            sequence_list = [int(sequence_str)]
     except ValueError as ve:
         print(f"ValueError: {ve}. Please ensure the input string for {arg} contains only numbers separated by commas.")
         sys.exit(1)
     except Exception as e:
-        print(f"An unexpected error occured: {e} \n {arg}")
+        print(f"An unexpected error occurred: {e} \n {arg}")
         sys.exit(1)
 
     return sequence_list

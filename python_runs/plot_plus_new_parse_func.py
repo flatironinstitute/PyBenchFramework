@@ -129,4 +129,4 @@ def parse_data(data, plot_title, job_type):
         i = 2
 
     # Return the figure and axis objects
-    return xmaster_list, ymaster_list, y2master_list, type_of_run_list
+    return xmaster_list, ymaster_list, y2master_list, type_of_run_list, plot_title
