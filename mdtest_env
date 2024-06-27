@@ -1,0 +1,6 @@
+ 1) modules/2.0-20220630 (S)   2) slurm (S)   3) openblas/threaded-0.3.20 (S)   4) openmpi/4.0.7
+
+source ~/python_environments/computer_vision/bin/activate
+export PyBench_root_dir="/mnt/home/skrit/Documents/PyBenchFramework"
+
+export PATH=$PATH:/mnt/home/skrit/Documents/apps/io500/bin
