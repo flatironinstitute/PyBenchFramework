@@ -3,3 +3,6 @@
 module load  modules/2.0-20220630 openmpi/4.0.7 modules/2.3-20240529 python/3.10.13 fio/3.36
 source ~/python_environments/computer_vision/bin/activate
 export PyBench_root_dir="/mnt/home/skrit/Documents/PyBenchFramework"
+
+#module load modules/2.0-20220630  openmpi/4.0.7 ior/mpi-3.3.0
+#export PATH=$PATH:/mnt/home/skrit/Documents/apps/io500/bin

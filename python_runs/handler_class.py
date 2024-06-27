@@ -85,41 +85,9 @@ class BenchmarkTool(ABC):
                 execute_ssh_command('cephmon900', 'ceph', 'ceph osd unset nodeep-scrub' )
         else:
             print ("noscrub was unset before this module completed, please ensure that is intended...")
-    '''
-    def track_net_traffic(self):
-        def calculate_net_rate(interval=1):
-            old_stats = psutil.net_io_counters()
-            time.sleep(interval)
-            new_stats = psutil.net_io_counters()
-
-            bytes_sent_per_sec = (new_stats.bytes_sent - old_stats.bytes_sent) / interval
-            bytes_recv_per_sec = (new_stats.bytes_recv - old_stats.bytes_recv) / interval
-
-            return bytes_sent_per_sec, bytes_recv_per_sec
-
-        def convert_to_gbps(bytes_per_sec):
-            GBPS_CONVERSION = 1_073_741_824  # Bytes in 1 Gigabyte
-            return bytes_per_sec / GBPS_CONVERSION
-
-        with open(self.log_file, 'a') as f:
-            while True:
-                bytes_sent, bytes_recv = calculate_net_rate()
-                gb_sent = convert_to_gbps(bytes_sent)
-                gb_recv = convert_to_gbps(bytes_recv)
-                timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                f.write(f"{timestamp}, GB Sent/sec: {gb_sent:.6f}, GB Received/sec: {gb_recv:.6f}\n")
-                f.flush()
-    '''
 
     def run(self):
         
-         # Define a thread for tracking network traffic
-        #net_thread = threading.Thread(target=self.track_net_traffic)
-        #net_thread.daemon = True  # Daemonize thread to ensure it exits when the main thread does
-        
-        #net_thread.start()
-
-        #Execute the constructed benchmark command.
         try:
             start_time = time.time()
             result = subprocess.run(self.command, capture_output=True, text=True, check=True)
@@ -150,10 +118,68 @@ class BenchmarkTool(ABC):
                 attempts += 1
             print("Output file not found after several attempts.")
             sys.stdout.flush()
+        else:
+            output_file = self.params['output_file']
+            with open(output_file, 'a') as file:
+                file.write(result.stdout)
+
         #turn scrubbing back on
         #self.set_scrub()
         
         #return result.stdout
+
+class mdtestTool(BenchmarkTool):
+    def setup_command(self, **params):
+        super().setup_command(**params)
+
+        self.command = ["mpirun"]
+        
+        config_file = params.get('config_file')
+        if config_file:
+            pass
+        else:
+            raise ValueError("Configuration file must be specified. mdtest...")
+
+        mpi_ranks = params.get('mpi_ranks')
+        files_per_rank = params.get('files_per_rank')
+        test_repetition = params.get('test_repetition')
+        directory = params.get('directory')
+
+        # Required parameter: output file
+        if mpi_ranks:
+            self.command.extend(["-n", str(mpi_ranks)])
+        else:
+            raise ValueError("Number of MPI ranks must be specified (--mpi-ranks)")
+
+        self.command.append("--map-by")
+        self.command.append("node")
+        self.command.append("--verbose")
+        self.command.append("mdtest")
+        
+        if files_per_rank:
+            self.command.extend(["-n", str(files_per_rank)])
+        else:
+            raise ValueError("Number of files per rank must be specified (--files-per-rank)")
+
+        if test_repetition:
+            self.command.extend(["-i", str(test_repetition)])
+        
+        if directory:
+            self.command.extend(["-d", directory])
+        else:
+            raise ValueError("Directory must be specified. (--directory)")
+
+        # Required parameter: output file
+        output_file = params.get('output_file')
+        if output_file:
+            pass
+            #self.command.extend([">>", str(output_file)])
+        else:
+            raise ValueError("Output file must be specified")
+    
+    def parse_output(self, output):
+        return "mdtest no parsing yet."
+
 
 class FIOTool(BenchmarkTool):
     
@@ -161,8 +187,8 @@ class FIOTool(BenchmarkTool):
         super().setup_command(**params)  # Call the base method to store params
         
         self.command = [
-        "fio",
-        ]
+                "fio",
+                ]
         
         # Required parameter: configuration file
         config_file = params.get('config_file')        
@@ -266,51 +292,3 @@ class IORTool(BenchmarkTool):
         """Parse the benchmark-specific output."""
         pass
 
-# Example usage for FIO
-#fio = FIOTool()
-#fio.setup_command(path="/dev/sda", block_size="4k", io_depth="32", rw="randwrite")
-#output_data = fio.run()
-#print(fio.parse_output(output_data))
-
-# Implement other tools like IOR and Ozone in a similar fashion
-
-'''
-# Example usage
-params = {
-    'num_procs': 64,
-    'host_file': 'myhosts.txt',
-    'transfer_size': '1m',
-    'block_size': '16m',
-    'segment_count': '16',
-    'file_per_proc': True,
-    'collective': True,
-    'fsync': True,
-    'test_file': 'filename',
-    'summary_format': 'JSON'
-}
-
-ior_tool = IORTool()
-ior_tool.setup_command(**params)
-output = ior_tool.run()
-print(output)
-'''
-
-"""
-# Example usage
-slurm_script_path = 'path_to_slurm_script.sh'
-params = {
-    'num_procs': 4,
-    'host_file': 'hosts.txt',
-    'transfer_size': '1m',
-    'block_size': '256m',
-    'segment_count': 16,
-    'file_per_proc': True,
-    'collective': True,
-    'fsync': True,
-    'test_file': 'testFile.ior'
-}
-
-ior_tool = IORTool(slurm_script_path)
-ior_tool.setup_command(**params)
-output = ior_tool.run()
-"""
