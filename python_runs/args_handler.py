@@ -12,17 +12,9 @@ import sys
 def handle_arguments():
     parser = argparse.ArgumentParser(description="This script wraps FIO and facilitates long-running variable testing on an FS.")
 
-    '''
-    parser.add_argument('--config', type=str, help="Path to the YAML config file.")
-    parser.add_argument('--slurm-job-number', type=int, required=False, help="Slurm job number this script is running under")
-    parser.add_argument('--block-size', type=str, required=True, help="Block size that FIO should read/write at.")
-    parser.add_argument('--directory', type=str, required=True, help="Directory to run the test in. This is where the test files will be created.")
-    parser.add_argument('--job-number', type=str, required=False, help="Number of jobs per node that FIO should run.")
-    parser.add_argument('--time', type=int, default=300, help="Number of seconds that FIO should run for.")
-    parser.add_argument('--io-type', type=str, required=True, help="write, read, randwrite, randread, among others. Which IO type should FIO issue?")
-    parser.add_argument('--platform-type', type=str, required=True, help="Which platform are we using? This will decide output file path as well.")
-    parser.add_argument('--split-hosts-file', type=str, required=False, default=False, help="Should the wrapper split the original hosts file into subsections for the different iterations?")
-    '''
+    parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks to use (only mdtest, for now)")
+    parser.add_argument('--files-per-rank', type=str, help="Number of files to create per rank (mdtest)")
+    parser.add_argument('--test-repetition', type=str, help="Number of times to repeat each test (mdtest)")
     parser.add_argument('--config', type=str, help="Path to the YAML config file.")
     parser.add_argument('--slurm-job-number', type=int, help="Slurm job number this script is running under")
     parser.add_argument('--block-size', type=str, help="Block size that FIO should read/write at.")
@@ -38,6 +30,7 @@ def handle_arguments():
     parser.add_argument('--template-path', type=str, help="The path to the FIO template")
     parser.add_argument('--first-node', type=str, help="The first node in the node list. Will execute some preperatory steps on this node")
     parser.add_argument('--interface-name', type=str, help="The interface you want to monitor for inbound and outbound counters")
+    parser.add_argument('--benchmark', type=str, help="The benchmark you want to run.")
 
     args = parser.parse_args()
     args_dict = vars(args)
@@ -60,7 +53,8 @@ def handle_arguments():
     # Check for required arguments
     #Trying a run without a hosts file to see if independent runs work
     #required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'hosts_file', 'template_path']
-    required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'template_path']
+    #required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'template_path', 'benchmark']
+    required_args = ['directory', 'io_type', 'platform_type', 'benchmark']
     missing_args = [arg for arg in required_args if arg not in merged_dict or merged_dict[arg] is None]
 
     if missing_args:
