@@ -1,0 +1,7 @@
+mpi_ranks: 4
+files_per_rank: 2
+test_repetition: 3
+directory: /mnt/home/skrit/Documents/PyBenchFramework/tmp
+slurm_job_number:
+io_type: metadata
+platform_type: EC63

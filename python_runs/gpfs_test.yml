@@ -1,0 +1,12 @@
+slurm_job_number: 
+block_size: 4M
+directory: /mnt/home/skrit/Documents/PyBenchFramework/tmp
+time: 200
+io_type: write
+platform_type: gpfs 
+split_hosts_file: 0 
+job_number: '5'
+node_count: 4
+hosts_file:
+no_scrub: 0
+template_path: /mnt/home/skrit/Documents/PyBenchFramework/examples/template/gpfs_template.fio
