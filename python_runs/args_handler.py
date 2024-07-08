@@ -12,13 +12,22 @@ import sys
 def handle_arguments():
     parser = argparse.ArgumentParser(description="This script wraps FIO and facilitates long-running variable testing on an FS.")
 
+    #universal
+    parser.add_argument('--config', type=str, help="Path to the YAML config file.")
+    parser.add_argument('--slurm-job-number', type=int, help="Slurm job number this script is running under")
+    parser.add_argument('--directory', type=str, help="Directory to run the test in. This is where the test files will be created.")
+    parser.add_argument('--first-node', type=str, help="The first node in the node list. Will execute some preperatory steps on this node")
+    parser.add_argument('--benchmark', type=str, help="The benchmark you want to run.")
+    parser.add_argument('--interface-name', type=str, help="The interface you want to monitor for inbound and outbound counters")
+
+    #mdtest portion
     parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks to use (only mdtest, for now)")
     parser.add_argument('--files-per-rank', type=str, help="Number of files to create per rank (mdtest)")
     parser.add_argument('--test-repetition', type=str, help="Number of times to repeat each test (mdtest)")
-    parser.add_argument('--config', type=str, help="Path to the YAML config file.")
-    parser.add_argument('--slurm-job-number', type=int, help="Slurm job number this script is running under")
+    parser.add_argument('--offset', type=str, help="Should there be a node offset? (if yes, 1, else ommit flag) (mdtest)")
+    
+    #fio portion
     parser.add_argument('--block-size', type=str, help="Block size that FIO should read/write at.")
-    parser.add_argument('--directory', type=str, help="Directory to run the test in. This is where the test files will be created.")
     parser.add_argument('--job-number', type=str, help="Number or sequence of number of jobs per node that FIO should run. e.g '1,5,10,15'. This is per node count in --node-count")
     parser.add_argument('--node-count', type=str, help="Sequence of nodes that FIO should run on. e.g '1,2,4,6,8,10'")
     parser.add_argument('--time', type=int, help="Number of seconds that FIO should run for.")
@@ -28,9 +37,6 @@ def handle_arguments():
     parser.add_argument('--hosts-file', type=str, help="Path to the intial hosts file which contains all hosts (At least FIO servers) involved.")
     parser.add_argument('--no-scrub', type=bool, help="(Ceph only) set noscrub and nodeepscrub flags on the ceph system. Requires passwordless SSH to the Ceph servers")
     parser.add_argument('--template-path', type=str, help="The path to the FIO template")
-    parser.add_argument('--first-node', type=str, help="The first node in the node list. Will execute some preperatory steps on this node")
-    parser.add_argument('--interface-name', type=str, help="The interface you want to monitor for inbound and outbound counters")
-    parser.add_argument('--benchmark', type=str, help="The benchmark you want to run.")
 
     args = parser.parse_args()
     args_dict = vars(args)
