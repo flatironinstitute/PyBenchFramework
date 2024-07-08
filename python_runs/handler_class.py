@@ -144,6 +144,7 @@ class mdtestTool(BenchmarkTool):
         files_per_rank = params.get('files_per_rank')
         test_repetition = params.get('test_repetition')
         directory = params.get('directory')
+        offset = params.get('offset')
 
         # Required parameter: output file
         if mpi_ranks:
@@ -168,6 +169,9 @@ class mdtestTool(BenchmarkTool):
             self.command.extend(["-d", directory])
         else:
             raise ValueError("Directory must be specified. (--directory)")
+
+        if offset:
+            self.command.extend(["-N", str(offset)])
 
         # Required parameter: output file
         output_file = params.get('output_file')

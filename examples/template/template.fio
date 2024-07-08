@@ -4,7 +4,7 @@ ioengine=libaio
 #direct=1
 size=50G
 unique_filename=0
-filename_format=$clientuid.$jobnum
+filename_format=${HOSTNAME}.$jobnum
 group_reporting
 bs=__block_size__
 fsync=100
