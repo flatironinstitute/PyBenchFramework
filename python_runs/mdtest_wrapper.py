@@ -6,7 +6,7 @@ import sys
 import benchmark_tools
 import args_handler
 import miscellaneous
-import network_counter_collection 
+import network_collect 
 import threading
 import time
 
@@ -27,8 +27,9 @@ def wrap_mdtest(args, PyBench_root_dir):
     files_per_rank = args['files_per_rank']
     test_repetition = args['test_repetition']
     directory = args['directory']
+    offset = args['offset']
 
-    mdtest_obj.setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{mpi_ranks}", files_per_rank=f"{files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", output_file=f"{log_dir}/mdtest_output")
+    mdtest_obj.setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{mpi_ranks}", files_per_rank=f"{files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=f"{log_dir}/mdtest_output")
         
     with open(f"{command_log_dir}/mdtest_command", 'a') as file:
         file.write(f"The following is the mdtest command")
