@@ -13,9 +13,9 @@ import threading
 import time
 
 def serverless_fio(args, PyBench_root_dir):
-    def background_network_monitor(args, job_count):
+    def background_network_monitor(args, job_count, PyBench_root_dir):
             print("network_monitoring")
-            network_counter_collection.monitor_traffic(args, job_count)
+            network_counter_collection.monitor_traffic(args, job_count, PyBench_root_dir)
 
     job_number = args['slurm_job_number']
 

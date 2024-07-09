@@ -9,10 +9,12 @@ def prep_work(args, PyBench_root_dir):
     log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
     command_log_dir = f"{log_dir}/commands"
     network_log_dir = f"{PyBench_root_dir}/network_stats/{job_number}"
+    test_files_log = f"{PyBench_root_dir}/examples/test_files"
 
     miscellaneous.ensure_log_directory_exists(log_dir,1)
     miscellaneous.ensure_log_directory_exists(command_log_dir,1)
     miscellaneous.ensure_log_directory_exists(network_log_dir, 1)
+    miscellaneous.ensure_log_directory_exists(test_files_log, 1)
 
 var_name = "PyBench_root_dir"
 

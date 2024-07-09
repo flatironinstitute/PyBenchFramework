@@ -9,10 +9,10 @@ class NetworkCounterCollection:
     def __init__(self):
         self.stop_thread = False
 
-    def monitor_traffic(self, args, proc_number):
+    def monitor_traffic(self, args, proc_number, PyBench_root_dir):
 
         #global stop_thread
-        root_dir = "/mnt/home/skrit/Documents/PyBenchFramework"
+        root_dir = PyBench_root_dir
 
         hostname = socket.gethostname()
         rate_dict = {}
