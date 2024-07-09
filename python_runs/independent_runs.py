@@ -56,7 +56,7 @@ def serverless_fio(args, PyBench_root_dir):
             file.write(tmp_cmd_string)
 
         network_counter_collection.stop_thread = False
-        background_thread = threading.Thread(target=background_network_monitor, args=(args, job_count))
+        background_thread = threading.Thread(target=background_network_monitor, args=(args, job_count, PyBench_root_dir))
         background_thread.start()
         start_time = time.time()
         print("starting fio?")
