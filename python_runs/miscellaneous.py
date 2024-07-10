@@ -4,6 +4,7 @@ import time
 import mmap
 import pathlib
 import json
+import socket
 
 def ensure_log_directory_exists(directory, createdir):
     if not os.path.exists(directory):
@@ -19,6 +20,7 @@ def reset_file_contents(original_file_contents, args, job_count):
     file_contents = file_contents.replace("__dir_var__", args['directory'])
     file_contents = file_contents.replace("__io_type_var__", args['io_type'])
     file_contents = file_contents.replace("__time_var__",f"{args['time']}")
+    file_contents = file_contents.replace("__hostname__",f"{socket.gethostname()}")
 
     return file_contents
 
