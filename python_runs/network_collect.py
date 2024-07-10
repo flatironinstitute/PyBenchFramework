@@ -19,7 +19,7 @@ class NetworkCounterCollection:
 
         slurm_job_number = args["slurm_job_number"] 
 
-        with open(f"{root_dir}/network_stats/{slurm_job_number}/{hostname}_{proc_number}_{args['io_type']}", 'a') as file:
+        with open(f"{root_dir}/network_stats/{slurm_job_number}/{hostname}_{node_count}_{proc_number}_{args['io_type']}", 'a') as file:
             while not self.stop_thread:
 
                 epoch_time = int(time.time())
