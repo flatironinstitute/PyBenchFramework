@@ -59,3 +59,22 @@ def split_arg_sequence(sequence, arg):
         sys.exit(1)
 
     return sequence_list
+
+def split_block_size_sequence(sequence, arg):
+    sequence_list = []
+
+    try:
+        sequence_str = str(sequence)  # Ensure sequence is treated as a string
+        if "," in sequence_str:
+            string_sequence_list = sequence_str.split(",")
+            sequence_list = [num for num in string_sequence_list]
+        else:
+            sequence_list = [sequence_str]
+    except ValueError as ve:
+        print(f"ValueError: {ve}. Please ensure the input string for {arg} contains only numbers separated by commas.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e} \n {arg}")
+        sys.exit(1)
+
+    return sequence_list
