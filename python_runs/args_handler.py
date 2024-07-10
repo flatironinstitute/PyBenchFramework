@@ -19,6 +19,7 @@ def handle_arguments():
     parser.add_argument('--first-node', type=str, help="The first node in the node list. Will execute some preperatory steps on this node")
     parser.add_argument('--benchmark', type=str, help="The benchmark you want to run.")
     parser.add_argument('--interface-name', type=str, help="The interface you want to monitor for inbound and outbound counters")
+    parser.add_argument('--total-node-count', type=str, help="The total count of nodes in the job")
 
     #mdtest portion
     parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks to use (only mdtest, for now)")

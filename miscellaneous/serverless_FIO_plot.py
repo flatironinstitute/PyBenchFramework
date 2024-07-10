@@ -58,7 +58,7 @@ def plot_serverless_FIO(directory):
     
         for value in sorted_data[key]:
             nodes.append(value[0])
-            bws.append(value[2])
+            bws.append(value[2]/1e6)
             iops.append(value[3])
         
         nodes_list.append(nodes)

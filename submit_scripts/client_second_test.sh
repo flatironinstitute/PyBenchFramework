@@ -18,8 +18,8 @@ python python_runs/prep_work.py --benchmark "fio-serverless" --slurm-job-number 
 
 sleep 10
 
-srun --nodes=10 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 10
+srun --nodes=10 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 10,5,1 --total-node-count 10
 
-srun --nodes=5 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 5
+#srun --nodes=5 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 5
 
-srun --nodes=1 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 1
+#srun --nodes=1 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 1
