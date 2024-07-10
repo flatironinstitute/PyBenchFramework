@@ -4,10 +4,10 @@ ioengine=libaio
 #direct=1
 size=50G
 unique_filename=0
-filename_format=${HOSTNAME}.$jobnum
+filename_format=__hostname__.$jobnum
 group_reporting
 bs=__block_size__
-fsync=100
+fsync=1000
 invalidate=1
 #iodepth=256
 runtime=__time_var__
