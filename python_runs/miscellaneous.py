@@ -34,6 +34,10 @@ def load_json_results(filename):
                 print(f"Error decoding JSON from file: {filename}")
 
     jobname = data['jobs'][0]['jobname']
+    if jobname == "randread":
+        jobname = "read"
+    elif jobname == "randwrite":
+        jobname = "write"
     bw = data['jobs'][0][jobname]['bw']
     iops = data['jobs'][0][jobname]['iops']
 
