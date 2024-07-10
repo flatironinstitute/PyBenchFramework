@@ -9,7 +9,7 @@ class NetworkCounterCollection:
     def __init__(self):
         self.stop_thread = False
 
-    def monitor_traffic(self, args, proc_number, PyBench_root_dir):
+    def monitor_traffic(self, args, proc_number, node_count, PyBench_root_dir):
 
         #global stop_thread
         root_dir = PyBench_root_dir

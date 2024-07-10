@@ -78,7 +78,7 @@ def plot_serverless_FIO(directory):
     for i in range(len(nodes_list)):
         ax1.plot(nodes_list[i], bw_list[i], 'o', label=f'{processor_counts[i]}_jobs')
         ax2.plot(nodes_list[i], iops_list[i], 'o', label=f'{processor_counts[i]}_jobs')
-    
+
     ax2.set_ylabel("IOPS")
     ax1.set_xlabel('Node count')
     ax1.set_ylabel('GB/s')
@@ -86,6 +86,8 @@ def plot_serverless_FIO(directory):
     ax1.legend(title='Type of run')
     plt.xticks(rotation=45)
     plt.tight_layout()
+    # Set x-axis ticks to increment by 2
+    plt.xticks(range(0, max(nodes_list[0])+1, 2))
     #plt.show()
     
     return fig, ax1, ax2

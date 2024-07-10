@@ -2,24 +2,37 @@
 #SBATCH -o logs/client_modules-%j.log
 #SBATCH -e logs/client_modules-%j.err
 #SBATCH -p scc
-#SBATCH --nodes=10
-#SBATCH --reservation=ceph_test
+#SBATCH --nodes=20
+#SBATCH --reservation=worker_test
+##SBATCH --ntasks-per-node=all
+#SBATCH --nodelist=worker[7377-7396]
 ##SBATCH -C ib-icelake
 ##SBATCH --time=40:00:00
 
 # Define root directory
-root_dir="/mnt/home/skrit/Documents/PyBenchFramework"
-
-block_size="1M"
+root_dir=$PyBench_root_dir
+block_size="4M"
 
 first_node=$(echo $SLURM_JOB_NODELIST | cut -d '-' -f 1 | awk -F '[' '{ print $1$2 }')
 
-python python_runs/prep_work.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node}
+#python python_runs/prep_work.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --io-type "write" --config python_runs/nvme_test.yml --first-node ${first_node}
 
 sleep 10
 
-srun --nodes=10 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 10,5,1 --total-node-count 10
+#srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --config python_runs/nvme_test.yml --first-node ${first_node} --total-node-count 20 --node-count 20 --template-path /mnt/home/skrit/Documents/testing_clones/clone1/PyBenchFramework/examples/template/starting_template.fio --job-number 16
 
-#srun --nodes=5 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 5
+python python_runs/prep_work.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --io-type "randread" --config python_runs/nvme_test.yml --first-node ${first_node}
 
-#srun --nodes=1 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 1M --config python_runs/fsync_test_ceph_test.yml --first-node ${first_node} --node-count 1
+srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --io-type "randread" --config python_runs/nvme_test.yml --first-node ${first_node} --total-node-count 20
+
+srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 64K --io-type "randread" --config python_runs/nvme_test.yml --first-node ${first_node} --total-node-count 20
+
+srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 4K --io-type "randread" --config python_runs/nvme_test.yml --first-node ${first_node} --total-node-count 20
+
+python python_runs/prep_work.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --io-type "randwrite" --config python_runs/nvme_test.yml --first-node ${first_node}
+
+srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 4M --io-type "randwrite" --config python_runs/nvme_test.yml --first-node ${first_node} --total-node-count 20
+
+srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 64K --io-type "randwrite" --config python_runs/nvme_test.yml --first-node ${first_node} --total-node-count 20
+
+srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --block-size 4K --io-type "randwrite" --config python_runs/nvme_test.yml --first-node ${first_node} --total-node-count 20
