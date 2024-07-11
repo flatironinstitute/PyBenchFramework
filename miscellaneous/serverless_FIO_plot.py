@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 # Directory containing the JSON files
 #directory = "../results/write/EC63/3577299/"
 
-def plot_serverless_FIO(directory, title):
+def plot_serverless_FIO(directory, title, block_size):
     
     # Find all files matching the pattern "combined*.json"
-    file_pattern = f"{directory}/combined*.json"
+    file_pattern = f"{directory}/combined*{block_size}.json"
     files = glob.glob(file_pattern)
 
     # Dictionary to store parsed data
@@ -76,7 +76,7 @@ def plot_serverless_FIO(directory, title):
 
     # Plot Total bw and Total iops
     for i in range(len(nodes_list)):
-        ax1.plot(nodes_list[i], bw_list[i], 'o', label=f'{processor_counts[i]}_jobs')
+        ax1.plot(nodes_list[i], bw_list[i], '-', label=f'{processor_counts[i]}_jobs')
         ax2.plot(nodes_list[i], iops_list[i], 'o', label=f'{processor_counts[i]}_jobs')
 
     ax2.set_ylabel("IOPS")
