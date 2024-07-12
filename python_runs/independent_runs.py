@@ -26,7 +26,8 @@ def serverless_fio(args, PyBench_root_dir):
 
     proc = list(benchmark_tools.split_arg_sequence(args['job_number'], '--job-number')) 
     nodes = list(benchmark_tools.split_arg_sequence(str(args['node_count']), '--node-count'))
-    block_sizes = list(benchmark_tools.split_block_size_sequence(args['block_size'], '--block-size'))
+    block_sizes = benchmark_tools.split_block_size_sequence(args['block_size'], '--block-size')
+    #print(f"{block_sizes} type is {type(block_sizes)}")
 
     config_template_path = args['template_path']
 
@@ -47,12 +48,13 @@ def serverless_fio(args, PyBench_root_dir):
     for node_iter in nodes:
         if my_line_num <= node_iter:
             for block_size in block_sizes:
+                #print(f"This iteration's block size is: {block_size}")
                 for job_count in proc:
                     
                     file_count = job_count
 
                     #Reset file contents for FIO config file
-                    file_contents = miscellaneous.reset_file_contents(original_file_contents, args, job_count)
+                    file_contents = miscellaneous.reset_file_contents(original_file_contents, args, job_count, block_size)
 
                     with open(f"examples/test_files/{job_number}_{hostname}_{job_count}p_{file_count}f_{block_size}_{args['io_type']}.fio", 'w') as file:
                         file.write(file_contents)

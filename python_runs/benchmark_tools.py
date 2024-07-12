@@ -67,7 +67,7 @@ def split_block_size_sequence(sequence, arg):
         sequence_str = str(sequence)  # Ensure sequence is treated as a string
         if "," in sequence_str:
             string_sequence_list = sequence_str.split(",")
-            sequence_list = [num for num in string_sequence_list]
+            sequence_list = string_sequence_list
         else:
             sequence_list = [sequence_str]
     except ValueError as ve:

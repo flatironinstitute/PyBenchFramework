@@ -11,11 +11,11 @@ def ensure_log_directory_exists(directory, createdir):
         if createdir == 1:
             os.makedirs(directory)
 
-def reset_file_contents(original_file_contents, args, job_count):
+def reset_file_contents(original_file_contents, args, job_count, single_block_size):
 
     # Reset file_contents to the original template for each iteration
     file_contents = original_file_contents
-    file_contents = file_contents.replace("__block_size__", args['block_size'])
+    file_contents = file_contents.replace("__block_size__", single_block_size)
     file_contents = file_contents.replace("__number_of_jobs__", f"{job_count}")
     file_contents = file_contents.replace("__dir_var__", args['directory'])
     file_contents = file_contents.replace("__io_type_var__", args['io_type'])
