@@ -14,9 +14,9 @@ import time
 import mmap
 
 def serverless_fio(args, PyBench_root_dir):
-    def background_network_monitor(args, job_count, node_count, PyBench_root_dir):
+    def background_network_monitor(args, job_count, node_count, block_size, PyBench_root_dir):
             print("network_monitoring")
-            network_counter_collection.monitor_traffic(args, job_count, node_count, PyBench_root_dir)
+            network_counter_collection.monitor_traffic(args, job_count, node_count, block_size, PyBench_root_dir)
 
     job_number = args['slurm_job_number']
     total_node_count = int(args['total_node_count'])
@@ -71,7 +71,7 @@ def serverless_fio(args, PyBench_root_dir):
                         file.write(tmp_cmd_string)
 
                     network_counter_collection.stop_thread = False
-                    background_thread = threading.Thread(target=background_network_monitor, args=(args, job_count, node_iter, PyBench_root_dir))
+                    background_thread = threading.Thread(target=background_network_monitor, args=(args, job_count, node_iter, block_size, PyBench_root_dir))
                     background_thread.start()
                     start_time = time.time()
                     print("starting fio?")

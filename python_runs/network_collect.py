@@ -9,7 +9,7 @@ class NetworkCounterCollection:
     def __init__(self):
         self.stop_thread = False
 
-    def monitor_traffic(self, args, proc_number, node_count, PyBench_root_dir):
+    def monitor_traffic(self, args, proc_number, node_count, block_size, PyBench_root_dir):
 
         #global stop_thread
         root_dir = PyBench_root_dir
@@ -19,7 +19,7 @@ class NetworkCounterCollection:
 
         slurm_job_number = args["slurm_job_number"] 
 
-        with open(f"{root_dir}/network_stats/{slurm_job_number}/{hostname}_{node_count}_{proc_number}_{args['io_type']}", 'a') as file:
+        with open(f"{root_dir}/network_stats/{slurm_job_number}/{hostname}_{node_count}_{proc_number}_{block_size}_{args['io_type']}", 'a') as file:
             while not self.stop_thread:
 
                 epoch_time = int(time.time())
