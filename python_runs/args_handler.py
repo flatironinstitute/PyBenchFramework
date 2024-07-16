@@ -20,7 +20,8 @@ def handle_arguments():
     parser.add_argument('--benchmark', type=str, help="The benchmark you want to run.")
     parser.add_argument('--interface-name', type=str, help="The interface you want to monitor for inbound and outbound counters")
     parser.add_argument('--total-node-count', type=str, help="The total count of nodes in the job")
-
+    parser.add_argument('--unit-restart', type=bool, help="Restart systemd unit (assumably ceph)")
+    
     #mdtest portion
     parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks to use (only mdtest, for now)")
     parser.add_argument('--files-per-rank', type=str, help="Number of files to create per rank (mdtest)")

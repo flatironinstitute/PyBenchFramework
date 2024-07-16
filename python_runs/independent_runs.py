@@ -1,4 +1,5 @@
 import os
+import re
 import socket
 import handler_class
 from datetime import datetime
@@ -83,9 +84,15 @@ def serverless_fio(args, PyBench_root_dir):
 
                     elapsed_time = end_time - start_time
                     print(f"Job num: {job_count}, node count: {node_iter}. Iteration is finished. {hostname} [s-{start_time}], [e-{end_time}, el-{elapsed_time}]")
-                    
+
+                    if 'unit_restart' in args:
+                        if args['unit_restart'] == 1:
+                            pattern = '/'
+                            split_dir = re.split(pattern, args['directory'])
+                            cephtest_root = '/'+split_dir[1]+'/'+split_dir[2]
+                            miscellaneous.restart_ceph_unit(cephtest_root)
                     sys.stdout.flush()
-            
+                    
     for node_iter in nodes:
         for block_size in block_sizes:
             for job_count in proc:

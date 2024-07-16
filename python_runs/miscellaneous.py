@@ -92,7 +92,7 @@ def get_decrypted_password(opt_pass_file,opt_key_file):
     decrypted_password = f.decrypt(encrypted_password)
 
     return decrypted_password.decode()
-'''
+
 def restart_ceph_unit(path):
 
     def check_ceph_is_active(escaped_path, sudo_password):
@@ -108,12 +108,14 @@ def restart_ceph_unit(path):
 
             process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             output, error = process.communicate(sudo_password + '\n')
+            
+            print(f"{hostname} Ceph is active? Output: ", output)
+            print(f"{hostname} Ceph is active? Errors: ", error)
 
-            print(f"{hostname} Output: ", output)
-            print(f"{hostname} Errors: ", error)
-
+            result = output.strip()
+            
             # Check the output
-            if result.stdout.strip() == 'active':
+            if result == 'active':
                 return 1
             else:
                 return 0
@@ -168,13 +170,13 @@ def restart_ceph_unit(path):
 
     command = ['sudo', '-S', 'python', '/mnt/cephadm/bin/iotest_helper.py', 'remount', path]
 
-    sudo_password = miscellaneous.get_decrypted_password(password_file, key_file)
+    sudo_password = get_decrypted_password(password_file, key_file)
 
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     output, error = process.communicate(sudo_password + '\n')
 
-    print(f"{hostname} Output: ", output)
-    print(f"{hostname} Errors: ", error)
+    print(f"{hostname} Ceph restart? Output: ", output)
+    print(f"{hostname} Ceph restart? Errors: ", error)
     
     active_status = 0
     active_counter = 0
@@ -187,4 +189,4 @@ def restart_ceph_unit(path):
         if active_counter == 10:
             print(f"{hostname} systemd unit for {path} is not becoming active")
             sys.exit(1)
-'''
+
