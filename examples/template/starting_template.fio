@@ -2,7 +2,7 @@
 directory=__dir_var__
 ioengine=libaio
 #direct=1
-size=50G
+size=45G
 unique_filename=0
 filename_format=__hostname__.$jobnum
 group_reporting
