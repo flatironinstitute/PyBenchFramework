@@ -13,6 +13,24 @@ import threading
 import time
 import mmap
 
+def count_lines_in_file(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+            return len(lines)
+    except FileNotFoundError:
+        return 0
+
+def wait_until_line_count_is_node_count(file_path, hostname, node_count, check_interval=1):
+    line_count = count_lines_in_file(file_path)
+    
+    while line_count != node_count:
+        print(f"Current line count is {line_count}. Waiting...")
+        time.sleep(check_interval)
+        line_count = count_lines_in_file(file_path)
+    
+    print(f"{hostname} uncombined file has reached {node_count} lines. Moving onto next job...")
+
 def serverless_fio(args, PyBench_root_dir):
     def background_network_monitor(args, job_count, node_count, block_size, PyBench_root_dir):
             print("network_monitoring")
@@ -84,7 +102,17 @@ def serverless_fio(args, PyBench_root_dir):
                     elapsed_time = end_time - start_time
                     print(f"Job num: {job_count}, node count: {node_iter}. Iteration is finished. {hostname} [s-{start_time}], [e-{end_time}, el-{elapsed_time}]")
                     
+                    json_log_file = f"{log_dir}/{hostname}_{node_iter}_{job_count}p_{file_count}f_{block_size}.json"
+                    uncombined_json_log_file = f"{log_dir}/uncombined_{node_iter}_{job_count}p_{block_size}.tmp"
+                    if os.path.exists(json_log_file):
+                        bw, iops = miscellaneous.load_json_results(json_log_file)
+
+                        with open(uncombined_json_log_file, 'a') as file:
+                            file.write(f"{hostname}, bw: {bw}, iops: {iops} \n")
+
+                    time.sleep(5)
                     sys.stdout.flush()
+                    wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter)
             
     for node_iter in nodes:
         for block_size in block_sizes:
@@ -96,10 +124,10 @@ def serverless_fio(args, PyBench_root_dir):
                 if os.path.exists(json_log_file):
                     bw, iops = miscellaneous.load_json_results(json_log_file)
 
-                    with open(uncombined_json_log_file, 'a') as file:
-                        file.write(f"{hostname}, bw: {bw}, iops: {iops} \n")
+                    #with open(uncombined_json_log_file, 'a') as file:
+                    #    file.write(f"{hostname}, bw: {bw}, iops: {iops} \n")
 
-                    time.sleep(5)
+                    #time.sleep(5)
 
                 if my_line_num == 1:
                     bw_total = 0
@@ -123,3 +151,5 @@ def serverless_fio(args, PyBench_root_dir):
                     with open(combined_json_log_file, 'w') as json_file:
                         json.dump(data, json_file, indent=4)
                         print(f"Data successfully written to {combined_json_log_file}")
+                
+
