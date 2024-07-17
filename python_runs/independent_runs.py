@@ -1,4 +1,5 @@
 import os
+import re
 import socket
 import handler_class
 from datetime import datetime
@@ -24,10 +25,15 @@ def count_lines_in_file(file_path):
 def wait_until_line_count_is_node_count(file_path, hostname, node_count, check_interval=1):
     line_count = count_lines_in_file(file_path)
     
+    wait_time = 0
     while line_count != node_count:
         print(f"Current line count is {line_count}. Waiting...")
         time.sleep(check_interval)
         line_count = count_lines_in_file(file_path)
+        wait_time += 1
+        if wait_time >= 600:
+            echo "Waited too long for uncombined to have the correct number of lines. Jobs and nodes are out of sync by over 10 minutes"
+            sys.exit(1)
     
     print(f"{hostname} uncombined file has reached {node_count} lines. Moving onto next job...")
 
@@ -110,10 +116,16 @@ def serverless_fio(args, PyBench_root_dir):
                         with open(uncombined_json_log_file, 'a') as file:
                             file.write(f"{hostname}, bw: {bw}, iops: {iops} \n")
 
-                    time.sleep(5)
-                    sys.stdout.flush()
                     wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter)
             
+                    if 'unit_restart' in args:
+                        if args['unit_restart'] == 1:
+                            pattern = '/'
+                            split_dir = re.split(pattern, args['directory'])
+                            cephtest_root = '/'+split_dir[1]+'/'+split_dir[2]
+                            miscellaneous.restart_ceph_unit(cephtest_root)
+                    sys.stdout.flush()
+                    
     for node_iter in nodes:
         for block_size in block_sizes:
             for job_count in proc:
