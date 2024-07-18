@@ -1,0 +1,8 @@
+mpi_ranks: 20 
+directory: /mnt/cephtestk/test-rep3/skrit/mdtest/
+files_per_rank: 20
+test_repetition: 3
+slurm_job_number:
+io_type: metadata
+platform_type: kernel_triple_replicated 
+offset: 1
