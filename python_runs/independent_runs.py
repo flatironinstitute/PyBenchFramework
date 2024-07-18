@@ -32,7 +32,7 @@ def wait_until_line_count_is_node_count(file_path, hostname, node_count, check_i
         line_count = count_lines_in_file(file_path)
         wait_time += 1
         if wait_time >= 600:
-            echo "Waited too long for uncombined to have the correct number of lines. Jobs and nodes are out of sync by over 10 minutes"
+            print ("Waited too long for uncombined to have the correct number of lines. Jobs and nodes are out of sync by over 10 minutes")
             sys.exit(1)
     
     print(f"{hostname} uncombined file has reached {node_count} lines. Moving onto next job...")
