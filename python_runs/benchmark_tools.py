@@ -7,7 +7,7 @@ def count_lines(filename):
             line_count += 1
     return line_count
 
-def create_node_list(node_string, filename, root_dir, job_num):
+def create_node_list_file(node_string, filename, root_dir, job_num):
     
     node_list = []
     node_count_list = []
@@ -26,13 +26,13 @@ def create_node_list(node_string, filename, root_dir, job_num):
                 file.write(f"{node_list[i]}\n")
                 i += 1
 
-
-def create_node_list_file(node_string, filename, root_dir, job_num):
+'''
+def create_list_from_string_seq(string, filename, root_dir, job_num):
     
     node_list = []
     node_count_list = []
     
-    node_count_list = split_arg_sequence(str(node_string), '--split-host-file')
+    node_count_list = split_arg_sequence(str(string), '--split-host-file')
     
     with open(filename, 'r') as file:
         for node_name in file:
@@ -40,6 +40,7 @@ def create_node_list_file(node_string, filename, root_dir, job_num):
             node_list.append(f"{stripped_name}")
     
     return node_list
+'''
 
 def split_arg_sequence(sequence, arg):
     sequence_list = []

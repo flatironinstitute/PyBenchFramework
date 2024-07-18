@@ -34,7 +34,7 @@ files = nodes.copy()
 set_noscrub = args['no_scrub']
 
 if args['split_hosts_file']:
-    benchmark_tools.create_node_list(args['node_count'], args['hosts_file'], PyBench_root_dir, job_number)
+    benchmark_tools.create_node_list_file(args['node_count'], args['hosts_file'], PyBench_root_dir, job_number)
 
 config_template_path = args['template_path']
 
