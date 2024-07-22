@@ -13,6 +13,7 @@ from network_collect import network_counter_collection
 import threading
 import time
 import mmap
+import count_lines_in_uncombined
 
 def count_lines_in_file(file_path):
     try:
@@ -116,8 +117,8 @@ def serverless_fio(args, PyBench_root_dir):
                         with open(uncombined_json_log_file, 'a') as file:
                             file.write(f"{hostname}, bw: {bw}, iops: {iops} \n")
 
-                    wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter)
-            
+                    count_lines_in_uncombined.wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter)
+
                     if 'unit_restart' in args:
                         if args['unit_restart'] == 1:
                             pattern = '/'
