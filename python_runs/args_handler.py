@@ -21,17 +21,19 @@ def handle_arguments():
     parser.add_argument('--interface-name', type=str, help="The interface you want to monitor for inbound and outbound counters")
     parser.add_argument('--total-node-count', type=str, help="The total count of nodes in the job")
     parser.add_argument('--unit-restart', type=bool, help="Restart systemd unit (assumably ceph)")
+    parser.add_argument('--node-count', type=str, help="Sequence of nodes that the benchmark should run with. e.g '1,2,4,6,8,10'")
     
     #mdtest portion
     parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks to use (only mdtest, for now)")
     parser.add_argument('--files-per-rank', type=str, help="Number of files to create per rank (mdtest)")
     parser.add_argument('--test-repetition', type=str, help="Number of times to repeat each test (mdtest)")
     parser.add_argument('--offset', type=str, help="Should there be a node offset? (if yes, 1, else ommit flag) (mdtest)")
+    parser.add_argument('--write-data', type=str, help="Should mdtest write data into the files? Either 0 for no or a number of bytes (mdtest)")
+    parser.add_argument('--read-data', type=str, help="Should mdtest read data from the files? Either 0 for no or a number of bytes (mdtest)")
     
     #fio portion
     parser.add_argument('--block-size', type=str, help="Block size that FIO should read/write at.")
     parser.add_argument('--job-number', type=str, help="Number or sequence of number of jobs per node that FIO should run. e.g '1,5,10,15'. This is per node count in --node-count")
-    parser.add_argument('--node-count', type=str, help="Sequence of nodes that FIO should run on. e.g '1,2,4,6,8,10'")
     parser.add_argument('--time', type=int, help="Number of seconds that FIO should run for.")
     parser.add_argument('--io-type', type=str, help="write, read, randwrite, randread, among others. Which IO type should FIO issue?")
     parser.add_argument('--platform-type', type=str, help="Which platform are we using? This will decide output file path as well.")
@@ -57,6 +59,8 @@ def handle_arguments():
     merged_dict.setdefault('no_scrub', 0)
     merged_dict.setdefault('split_hosts_file', False)
     merged_dict.setdefault('interface_name', '')
+    merged_dict.setdefault('write_data', '0')
+    merged_dict.setdefault('read_data', '0')
 
     # Check for required arguments
     #Trying a run without a hosts file to see if independent runs work
@@ -65,6 +69,7 @@ def handle_arguments():
     required_args = ['directory', 'io_type', 'platform_type', 'benchmark']
     missing_args = [arg for arg in required_args if arg not in merged_dict or merged_dict[arg] is None]
 
+    print (f"{merged_dict['write_data']} {merged_dict['write_data']}") 
     if missing_args:
         print(f"Error: Missing required arguments: {', '.join(missing_args)}")
         sys.exit(1)

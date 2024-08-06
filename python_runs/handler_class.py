@@ -145,6 +145,9 @@ class mdtestTool(BenchmarkTool):
         test_repetition = params.get('test_repetition')
         directory = params.get('directory')
         offset = params.get('offset')
+        node_count = params.get('node_count')
+        write_into_file = params.get('write_data')
+        read_from_file = params.get('read_data')
 
         # Required parameter: output file
         if mpi_ranks:
@@ -154,6 +157,10 @@ class mdtestTool(BenchmarkTool):
 
         self.command.append("--map-by")
         self.command.append("node")
+        
+        if node_count:
+            self.command.extend(["-N", str(node_count)])
+        
         self.command.append("--verbose")
         self.command.append("mdtest")
         
@@ -182,8 +189,11 @@ class mdtestTool(BenchmarkTool):
             raise ValueError("Output file must be specified")
 
         self.command.extend(["-Y"])
-        self.command.extend(["-w", "3901"])
-        self.command.extend(["-e", "3901"])
+        
+        if write_into_file: 
+            self.command.extend(["-w", f"{write_into_file}"])
+        if read_from_file:
+            self.command.extend(["-e", f"{read_from_file}"])
     
     def parse_output(self, output):
         return "mdtest no parsing yet."
