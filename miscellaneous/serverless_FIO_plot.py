@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # Directory containing the JSON files
 #directory = "../results/write/EC63/3577299/"
 
-def plot_serverless_FIO(directory, title, block_size):
+def plot_serverless_FIO(directory, title, block_size, optional_plot_block_size=None):
     
     # Find all files matching the pattern "combined*.json"
     file_pattern = f"{directory}/combined*{block_size}.json"
@@ -58,7 +58,10 @@ def plot_serverless_FIO(directory, title, block_size):
     
         for value in sorted_data[key]:
             nodes.append(value[0])
-            bws.append(value[2]/1e6)
+            if optional_plot_block_size is None:
+                bws.append(value[2]/1e6)
+            elif optional_plot_block_size == "1M":
+                bws.append(value[2]/1e3)
             iops.append(value[3])
         
         nodes_list.append(nodes)
@@ -81,7 +84,10 @@ def plot_serverless_FIO(directory, title, block_size):
 
     ax2.set_ylabel("IOPS")
     ax1.set_xlabel('Node count')
-    ax1.set_ylabel('GB/s')
+    if optional_plot_block_size == "1M":
+        ax1.set_ylabel('MB/s')
+    else:
+        ax1.set_ylabel('GB/s')
     ax1.set_title(title)
     ax1.legend(title='Type of run')
     plt.xticks(rotation=45)

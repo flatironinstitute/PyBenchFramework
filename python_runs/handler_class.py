@@ -180,6 +180,10 @@ class mdtestTool(BenchmarkTool):
             #self.command.extend([">>", str(output_file)])
         else:
             raise ValueError("Output file must be specified")
+
+        self.command.extend(["-Y"])
+        self.command.extend(["-w", "3901"])
+        self.command.extend(["-e", "3901"])
     
     def parse_output(self, output):
         return "mdtest no parsing yet."

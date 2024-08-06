@@ -2,6 +2,10 @@ import os
 import json
 import matplotlib.pyplot as plt
 import pandas as pd
+import glob
+import itertools
+import copy
+import statistics
 
 def load_json_files(directory):
     data = {}
@@ -131,6 +135,116 @@ def parse_data(data, plot_title, job_type):
 
     # Return the figure and axis objects
     return xmaster_list, ymaster_list, y2master_list, type_of_run_list, plot_title
+
+def load_combined_files(directory, blocksize):
+
+    sorted_data = []
+    
+    for i in directory:
+        file_pattern = f"{i}/combined_*_{blocksize}*"
+        files = glob.glob(file_pattern)
+    
+        data = {}
+    
+        # Parse each JSON file and store the data
+        for file in files:
+            tmplist = []
+            with open(file, 'r') as f:
+                content = json.load(f)
+                nodes = content["nodes"]
+                int_nodes = int(content["nodes"])
+                processors = content["processors"]
+                bw = content["bw"]
+                iops = content["iops"]
+                tmplist.append(int_nodes)
+                tmplist.append(processors)
+                tmplist.append(bw)
+                tmplist.append(iops)
+
+                # Ensure the key exists in the dictionary
+                if processors not in data:
+                    data[processors] = []
+                data[processors].append(tmplist)
+
+        sorted_data_tmp = {k: v for k, v in sorted(data.items(), key=lambda item: item[0])}
+        for key in sorted_data_tmp:
+            sorted_data_tmp[key] = sorted(sorted_data_tmp[key], key=lambda x: x[0])
+        
+        sorted_data.append(sorted_data_tmp)
+    
+    return sorted_data
+
+def compare_combined_data(data_list, run_type, first_run_name, second_run_name):
+    comparison_data = []
+    data_dict = {}
+    
+    for i in range(len(data_list) - 1):
+        #print(data_list[i])
+        #for j in range(len(data_list[i]) - 1):
+            #selected_item = dict(itertools.islice(data_list[i].items(), j, j+1))
+            #print(selected_item)
+        if i <= len(data_list) - 2:
+            keys = list(data_list[i].keys())
+            #print(len(keys))
+            for k in range(len(keys)):
+                value = data_list[i][keys[k]]
+                next_value = data_list[i+1][keys[k]]
+                #print(len(value))
+                for v in range(len(value)):
+                    current_bw = value[v][2]/1e6
+                    next_bw = next_value[v][2]/1e6
+                    current_iops = value[v][3]
+                    next_iops = next_value[v][3]
+
+                    node_count = value[v][0]
+                                        
+                    #print (f"BW: {current_bw}, IOPS: {current_iops}")
+                    #print (f"Next BW: {next_bw}, Next IOPS: {next_iops}")
+                    
+                    mb_speedup = (next_bw - current_bw) / current_bw * 100 if current_bw != 0 else float('inf')
+                    iops_speedup = (next_iops - current_iops) / current_iops * 100 if current_iops != 0 else float('inf')
+                    comparison_data.append({
+                                'Run Type': run_type,
+                                'Node Count': node_count,
+                                'Job Count': value[v][1],
+                                f"GB/s ({first_run_name})": current_bw,
+                                f"GB/s ({second_run_name})": next_bw,
+                                'GB/s Speedup (%)': mb_speedup,
+                                'IOPS (First run)': current_iops,
+                                'IOPS (Second run)': next_iops,
+                                'IOPS Speedup (%)': iops_speedup
+                            })
+                    if i == (len(data_list) -2) and k == (len(keys) - 1) and v == (len(value) - 1):
+                        comparison_tmp = copy.deepcopy(comparison_data)
+                        mean_GB_speedup = statistics.mean([item['GB/s Speedup (%)'] for item in comparison_tmp])
+                        
+                        #comparison_data.append({
+                        #        'Mean GB/s Speedup (%)': statistics.mean([item['GB/s Speedup (%)'] for item in comparison_tmp])
+                        #})
+
+    for i in comparison_data:
+        i['abs_dev'] = abs(i['GB/s Speedup (%)'] - mean_GB_speedup)
+
+    sorted_by_deviation = sorted(comparison_data, key=lambda x: x['abs_dev'], reverse=True)
+    #print(sorted_by_deviation)
+    num_top_elements = int(len(sorted_by_deviation) * 0.10)  # 10% of the list length
+    
+    top_deviated_speedup_pd = []
+    for i in range(num_top_elements):
+        top_deviated_speedup_pd.append(sorted_by_deviation[i])
+        
+    #print(top_deviated_speedup_pd)
+    data_dict['top_ten'] = pd.DataFrame(top_deviated_speedup_pd)
+    
+    GB_speedup_list = [item['GB/s Speedup (%)'] for item in comparison_data]
+    data_dict['dataframe'] = pd.DataFrame(comparison_data)
+    data_dict['mean_gb_speedup'] = mean_GB_speedup
+    absolute_deviations = [abs(x - mean_GB_speedup) for x in GB_speedup_list]
+    data_dict['abs_dev'] = absolute_deviations
+    mean_absolute_deviations = sum(absolute_deviations) / len(GB_speedup_list)
+    data_dict['mean_abs_dev'] = mean_absolute_deviations
+    
+    return data_dict
 
 # Load and parse data
 def load_and_parse_data(directory_paths, plot_title, io_type):
