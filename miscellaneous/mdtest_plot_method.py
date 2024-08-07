@@ -22,6 +22,7 @@ def read_between_markers(filename, start_marker, end_marker):
     else:
         return []
 
+'''
 # Find all files matching the pattern "combined*.json"
 directory = "../results/metadata/kernel_EC63/3635332"
 file_pattern = f"{directory}/mdtest_output_*"
@@ -72,6 +73,7 @@ ax.set_ylabel('ops/sec')
 ax.set_title('File creation')
 ax.legend(title='Files per rank')
 plt.show()
+'''
 
 def parse_files(directory):
     file_pattern = f"{directory}/mdtest_output_*"
@@ -88,11 +90,11 @@ def parse_files(directory):
             split_lines.append(line.split())
         dict_key_list = re.split('_', file)
         #dict_key = dict_key_list[3]+"r_"+dict_key_list[5]+"f"    
-        dict_key = int(dict_key_list[3]),int(dict_key_list[5])
+        dict_key = int(dict_key_list[5]),int(dict_key_list[7])
         data[dict_key] = pd.DataFrame(split_lines)
         split_lines = []
 
-    print(data[(200, 1024)])
+    #print(data[(200, 1024)])
     dict_of_file_creation = {}
     #print(data)
     for key, value in data.items():
