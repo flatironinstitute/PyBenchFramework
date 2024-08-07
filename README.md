@@ -43,3 +43,5 @@ node_count: 10,5,1
 One thing to note is that the main loop takes mpi ranks and multiplies it to the node count. For example, when mpi_ranks is 5 and node_count is 1, mpirun is given '-n 5' for a total of 5 mpi ranks. When mpi_ranks is 5 and node_count is 10, mpirun is given '-n 50' (5 * 10) which is distributed across 10 nodes (--map-by node -N 10).
 
 'slurm_job_number' should, at least for now, be an inline argument. Keep in mind inline arguments are likely separated by - rather than _ --help should show all arguments as they should be inline.
+
+Under the 'submit_scripts' folder, you'll see several slurm scripts. 'mdtest.sh' is a good template for submitting mdtest jobs and the scripts starting with 'ssd...' or 'hdd...' are good templates for FIO jobs.
