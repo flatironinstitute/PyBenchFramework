@@ -1,12 +1,13 @@
 slurm_job_number: 
-block_size: "4M,64K,4K"
+block_size: "4M,4K"
 directory: /mnt/cephtest-fi5/test-rep3-ssd/skrit/fio
-time: 120 
+time: 90 
 io_type: write
-platform_type: triple_replication 
+platform_type: nvme_rep3_fuse
 split_hosts_file: 0
-job_number: '48,16,8,4,2,1'
-node_count: 20,16,8,4,2,1
+job_number: '48,16,8,1'
+node_count: 20,16,8,1
 hosts_file:
 no_scrub: 0
+unit_restart: 1
 template_path: /mnt/home/skrit/Documents/testing_clones/clone1/PyBenchFramework/examples/template/template.fio

@@ -253,7 +253,9 @@ class IORTool(BenchmarkTool):
         num_procs = params.get('num_procs', 1)
         self.command = ["mpirun"]
         
-        self.command.extend(['--map-by', 'ppr:10:node'])
+        self.command.append("--map-by")
+        self.command.append("node")
+
         self.command.extend(['-np', str(num_procs)])
         
         # Append the IOR executable

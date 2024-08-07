@@ -45,7 +45,7 @@ class NetworkCounterCollection:
             bytes_recv_per_sec = (new_inteface_stats.bytes_recv - old_inteface_stats.bytes_recv) / interval
             
         elif interface_name == '' or interface_name not in old_stats:
-            print(f"monitoring all intefaces since --interface-name is either not specified or not found {hostname}")
+            #print(f"monitoring all intefaces since --interface-name is either not specified or not found {hostname}")
             old_stats = psutil.net_io_counters()
             time.sleep(interval)
             new_stats = psutil.net_io_counters()
