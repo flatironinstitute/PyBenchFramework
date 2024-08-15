@@ -95,7 +95,8 @@ def get_decrypted_password(opt_pass_file,opt_key_file):
 
 def restart_ceph_unit(path):
 
-    def check_ceph_is_active(escaped_path, sudo_password):
+    def check_ceph_is_active(escaped_path):
+        #, sudo_password):
 
         unit_filename = 'mnt-' + escaped_path + '.mount'
         unit_path = '/etc/systemd/system/' + unit_filename
@@ -104,36 +105,36 @@ def restart_ceph_unit(path):
             sys.exit(1)
 
         try:
-            command = ['sudo', '-S', 'systemctl', 'is-active', unit_filename]
+            command = ['systemctl', 'is-active', unit_filename]
 
-            process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            output, error = process.communicate(sudo_password + '\n')
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            #output, error = process.communicate(sudo_password + '\n')
             
-            print(f"{hostname} Ceph is active? Output: ", output)
-            print(f"{hostname} Ceph is active? Errors: ", error)
+            print(f"{hostname} Ceph is active? Output: ", result.stdout)
+            print(f"{hostname} Ceph is active? Errors: ", result.stderr)
 
-            result = output.strip()
+            is_active = result.stdout.strip()
             
             # Check the output
-            if result == 'active':
+            if is_active == 'active':
                 return 1
             else:
                 return 0
         except subprocess.CalledProcessError as e:
             print(f"Failed to get active status for {unit_filename}: {e.stderr}")
             sys.exit(1)
-
+    
     hostname = socket.gethostname()
     
     m = re.match('/mnt/cephtest[-_\w]*$', path)
     if not m:
         print("ERROR: Remount path must be /mnt/cephtest...")
         sys.exit(1)
-
+    
     if not os.path.exists(path):
         print("ERROR: Path '{}' does not exist".format(path))
         sys.exit(1)
-
+    
     escaped_path = path[5:]
     try:
         while True:
@@ -141,7 +142,8 @@ def restart_ceph_unit(path):
             escaped_path = escaped_path[:ix] + '\\x2d' + escaped_path[ix+1:]
     except ValueError:
         pass
-
+    
+    '''
     try:
         key_file = os.getenv("KEY_FILE")
         if not key_file:
@@ -153,7 +155,7 @@ def restart_ceph_unit(path):
     except ValueError as ve:
         print(f"Error: {ve}")
         sys.exit(1)
-
+    
     try:
         password_file = os.getenv("PASS_FILE")
         if not key_file:
@@ -165,24 +167,27 @@ def restart_ceph_unit(path):
     except ValueError as ve:
         print(f"Error: {ve}")
         sys.exit(1)
-
+    
     print(key_file, password_file)
-
-    command = ['sudo', '-S', 'python', '/mnt/cephadm/bin/iotest_helper.py', 'remount', path]
-
-    sudo_password = get_decrypted_password(password_file, key_file)
-
-    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    output, error = process.communicate(sudo_password + '\n')
-
-    print(f"{hostname} Ceph restart? Output: ", output)
-    print(f"{hostname} Ceph restart? Errors: ", error)
+    '''
+    
+    #command = ['sudo', '-S', 'python', '/mnt/cephadm/bin/iotest_helper.py', 'remount', path]
+    command = ['sudo', '/mnt/cephadm/bin/iotest_helper.py', 'remount', path]
+    
+    #sudo_password = get_decrypted_password(password_file, key_file)
+    
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    #output, error = process.communicate(sudo_password + '\n')
+    
+    print(f"{hostname} Ceph restart? Output: ", result.stdout)
+    print(f"{hostname} Ceph restart? Errors: ", result.stderr)
     
     active_status = 0
     active_counter = 0
     
     while active_status == 0:
-        active_status = check_ceph_is_active(escaped_path, sudo_password)
+        active_status = check_ceph_is_active(escaped_path)
+                #, sudo_password)
         time.sleep(1)
         active_counter += 1
 
