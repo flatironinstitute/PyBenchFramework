@@ -36,7 +36,7 @@ def count_lines_in_file_direct(file_path):
     except FileNotFoundError:
         return 0
 
-def wait_until_line_count_is_node_count(file_path, hostname, node_count, check_interval=5):
+def wait_until_line_count_is_node_count(file_path, hostname, node_count, total_intervals, check_interval=5):
     wait_time = 0
     while True:
         line_count = count_lines_in_file_direct(file_path)
@@ -47,7 +47,7 @@ def wait_until_line_count_is_node_count(file_path, hostname, node_count, check_i
 
         time.sleep(check_interval)
         wait_time += 1 
-        if wait_time >= 500:
+        if wait_time >= total_intervals:
             print(f"[{hostname}] Waited too long for uncombined to have the correct number of lines. Jobs and nodes are out of sync by over 40 minutes")
             sys.exit(1)
 

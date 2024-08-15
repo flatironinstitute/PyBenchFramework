@@ -22,6 +22,8 @@ def handle_arguments():
     parser.add_argument('--total-node-count', type=str, help="The total count of nodes in the job")
     parser.add_argument('--unit-restart', type=bool, help="Restart systemd unit (assumably ceph)")
     parser.add_argument('--node-count', type=str, help="Sequence of nodes that the benchmark should run with. e.g '1,2,4,6,8,10'")
+    parser.add_argument('--job-note', type=str, help="insert a note for the job")
+    parser.add_argument('--wait-for-others', type=bool, help="True if nodes should wait for each other to finish iterations, false if not (1 or 0)")
     
     #mdtest portion
     parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks to use (only mdtest, for now)")
@@ -61,6 +63,7 @@ def handle_arguments():
     merged_dict.setdefault('interface_name', '')
     merged_dict.setdefault('write_data', '0')
     merged_dict.setdefault('read_data', '0')
+    merged_dict.setdefault('wait_for_others', 1)
 
     # Check for required arguments
     #Trying a run without a hosts file to see if independent runs work
