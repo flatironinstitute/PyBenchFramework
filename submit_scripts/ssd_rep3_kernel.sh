@@ -26,7 +26,7 @@ sleep 10
 #rm -f results/write/nvme_rep3_kernel/${SLURM_JOB_ID}/*.tmp
 #rm -f results/write/nvme_rep3_kernel/${SLURM_JOB_ID}/*.json
 
-srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --block-size 4M --node-count 2,1 --config python_runs/config/nvme_test_kernel_ssd_rep3.yml --first-node ${first_node} --total-node-count 20
+srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --block-size 4M --config python_runs/config/nvme_test_kernel_ssd_rep3.yml --first-node ${first_node} --total-node-count 20
 
 srun --nodes=20 python python_runs/run.py --benchmark "fio-serverless" --slurm-job-number ${SLURM_JOB_ID} --io-type "write" --block-size 4M --config python_runs/config/nvme_test_kernel_ssd_rep3.yml --first-node ${first_node} --total-node-count 20
 
