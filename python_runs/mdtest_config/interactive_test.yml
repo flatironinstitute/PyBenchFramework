@@ -1,11 +1,11 @@
 mpi_ranks: 40,30,20,10,5 
 directory: /mnt/cephtestk/test-ec63/skrit/mdtest
-files_per_rank: 20,10,5
+files_per_rank: 5
 test_repetition: 3
 slurm_job_number:
 io_type: metadata
 platform_type: kernel_EC63 
 offset: 1
-write_data: '3901'
-read_data: '3901'
+#write_data: '3901'
+#read_data: '3901'
 node_count: 10,5,1 

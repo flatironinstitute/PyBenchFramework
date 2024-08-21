@@ -6,6 +6,7 @@
 #SBATCH --reservation=worker_test
 ##SBATCH -C ib-icelake
 ##SBATCH --time=40:00:00
+#SBATCH --exclusive
 
 first_node=$(echo $SLURM_JOB_NODELIST | cut -d '-' -f 1 | awk -F '[' '{ print $1$2 }')
 

@@ -56,6 +56,34 @@ def wrap_mdtest(args, PyBench_root_dir):
                 end_time = time.time()
                 
                 elapsed_time = end_time - start_time
-                print(f"mdtest job {node_type}_nodes_{tmp_rank}_ranks_{files_per_rank}_files_per_rank is finished. [s-{start_time}], [e-{end_time}]")
+                
+                if elapsed_time <= 59:
+                    while elapsed_time <= 59:
+                        multiple = 60 / elapsed_time
+                        new_files_per_rank = int(files_per_rank * multiple) + int(0.1 * files_per_rank)
+                        
+                        mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank"] = handler_class.mdtestTool()
+                        mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{new_files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=f"{log_dir}/mdtest_output_{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank_timed", write_data=f"{write_data}", read_data=f"{read_data}", node_count=f"{node_type}")
+                        with open(f"{command_log_dir}/mdtest_command_{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank_timed", 'a') as file:
+                            file.write(f"The following is the mdtest command")
+                            tmp_cmd_string = ""
+                            for cmd_el in mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank"].command:
+                                tmp_cmd_string += f" {cmd_el}"
+                            file.write(tmp_cmd_string)
+                        
+                        start_time = time.time()
+                        mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank"].run()
+                        end_time = time.time()
+
+                        old_elapsed_time = elapsed_time
+                        elapsed_time = end_time - start_time
+                        print (f"entered the optimizer. Old elapsed time: {old_elapsed_time}, New elapsed time: {elapsed_time}, old files_per_rank {files_per_rank}, new files per rank {new_files_per_rank}, multiple is: {multiple}")
+                        files_per_rank = new_files_per_rank
+
+                #   run code to figure out the appropriate test time by running the benchmark enough times to figure out the optimal time
+                # increase files per rank by a set amount
+                # figure out the relationship between the increase in number of files and the increase in time
+                # Increase the number of files by the amount it should be according to the multiple difference between 1 minute and the time of the original test
+                print(f"mdtest job {node_type}_nodes_{tmp_rank}_ranks_{files_per_rank}_files_per_rank is finished. [s-{start_time}], [e-{end_time}], elapsed time: {elapsed_time}")
                 
                 sys.stdout.flush()
