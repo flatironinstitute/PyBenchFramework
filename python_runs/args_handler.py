@@ -25,8 +25,18 @@ def handle_arguments():
     parser.add_argument('--job-note', type=str, help="insert a note for the job")
     parser.add_argument('--wait-for-others', type=bool, help="True if nodes should wait for each other to finish iterations, false if not (1 or 0)")
     
+    #ior portion
+    parser.add_argument('--testFile', type=str, help="File/directory to run the IOR test suite on")
+    parser.add_argument('--transfer-size',type=str, help="transfer size")
+    parser.add_argument('--segment-count', type=str, help="segment count")
+    parser.add_argument('--reorder-tasks', type=str, help="reorder tasks")
+    parser.add_argument('--fsync', type=str, help="fsync")
+    parser.add_argument('--output-file', type=str, help="output file")
+    parser.add_argument('--output-format', type=str, help="output format")
+    parser.add_argument('--deadline_for_stonewalling', type=int, help="Run IOR in timed mode instead of an indefinite time. All ranks stop at the same time.")
+
     #mdtest portion
-    parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks to use (only mdtest, for now)")
+    parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks per node to use")
     parser.add_argument('--files-per-rank', type=str, help="Number of files to create per rank (mdtest)")
     parser.add_argument('--test-repetition', type=str, help="Number of times to repeat each test (mdtest)")
     parser.add_argument('--offset', type=str, help="Should there be a node offset? (if yes, 1, else ommit flag) (mdtest)")
@@ -69,7 +79,7 @@ def handle_arguments():
     #Trying a run without a hosts file to see if independent runs work
     #required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'hosts_file', 'template_path']
     #required_args = ['block_size', 'directory', 'io_type', 'platform_type', 'job_number', 'node_count', 'template_path', 'benchmark']
-    required_args = ['directory', 'io_type', 'platform_type', 'benchmark']
+    required_args = [ 'io_type', 'platform_type', 'benchmark']
     missing_args = [arg for arg in required_args if arg not in merged_dict or merged_dict[arg] is None]
 
     print (f"{merged_dict['write_data']} {merged_dict['write_data']}") 

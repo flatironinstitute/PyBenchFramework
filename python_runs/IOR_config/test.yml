@@ -1,0 +1,11 @@
+testFile: /mnt/cephtest-fi5k/test-rep3-ssd/skrit/ior/testFile
+mpi_ranks: 1
+node_count: 10
+block_size: "16m"
+segment_count: 16
+reorder_tasks: 1
+fsync: 1
+output_format: "JSON"
+output_file: "IOR_output_test"
+transfer_size: "1m"
+deadline_for_stonewalling: 1

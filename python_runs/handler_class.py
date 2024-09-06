@@ -128,6 +128,94 @@ class BenchmarkTool(ABC):
         
         #return result.stdout
 
+class newIORTool(BenchmarkTool):
+    #pass
+    #mpirun -n 64 ./ior -t 1m -b 16m -s 16 -F -C -e -o /path/to/TestFile
+    def setup_command(self, **params):
+        super().setup_command(**params)
+
+        self.command = ["mpirun"]
+
+        config_file = params.get('config_file')
+        
+        if config_file:
+            pass
+        else:
+            raise ValueError("Configuration file must be specified. IOR...")
+        
+        mpi_ranks = params.get('mpi_ranks')
+        filename = params.get('filename')
+        ranks_per_node = params.get('ranks_per_node')
+        block_size = params.get('block_size')
+        transfer_size = params.get('transfer_size')
+        segment_count = params.get('segment_count')
+        reorder_tasks = params.get('reorder_tasks')
+        fsync = params.get('fsync')
+        output_file = params.get('output_file')
+        output_format = params.get('output_format')
+        deadline_for_stonewalling = params.get('deadline_for_stonewalling')
+
+        # Required parameter: output file
+        if mpi_ranks:
+            self.command.extend(["-n", str(mpi_ranks)])
+        else:
+            raise ValueError("Number of MPI ranks must be specified (--mpi-ranks)")
+
+        self.command.append("--map-by")
+        self.command.append("node")
+        
+        if ranks_per_node:
+            self.command.extend(["-N", str(ranks_per_node)])
+        
+        self.command.append("--verbose")
+        self.command.append("ior")
+        
+        if block_size:
+            self.command.extend(["-b", str(block_size)])
+        
+        if transfer_size:
+            self.command.extend(["-t", str(transfer_size)])
+
+        if segment_count:
+            self.command.extend(["-s", str(segment_count)])
+        
+        if reorder_tasks:
+            self.command.extend(["-C"])
+
+        if fsync:
+            self.command.extend(["-e"])
+
+        if deadline_for_stonewalling != 0:
+            self.command.extend(['-D', f"{deadline_for_stonewalling}"])
+        else:
+            pass
+
+        self.command.extend(['-k'])
+        self.command.extend(['-i', '10000000'])
+        self.command.extend(['-T', '1'])
+        self.command.extend(['-F'])
+
+        # Required parameter: output file
+        output_file = params.get('output_file')
+
+        if filename:
+            self.command.extend(["-o", str(filename)])
+        else:
+            raise ValueError("filename must be specified.")
+        
+        if output_file:
+            self.command.extend(['-O', f"summaryFile={output_file}"])
+        else:
+            raise ValueError("Output file must be specified")
+
+        if output_format:
+            self.command.extend(['-O', f"summaryFormat={output_format}"])
+        else:
+            raise ValueError("Output file format must be specified")
+
+    def parse_output(self, output):
+        return "IOR no parsing yet."
+
 class mdtestTool(BenchmarkTool):
     def setup_command(self, **params):
         super().setup_command(**params)
