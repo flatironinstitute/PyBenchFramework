@@ -2,7 +2,8 @@
 #SBATCH -o logs/mdtest-%j.log
 #SBATCH -e logs/mdtest-%j.err
 #SBATCH -p scc
-#SBATCH --nodes=10
+#SBATCH --nodes=24
+#SBATCH --nodelist=worker[7372-7374,7377-7379,7382-7397,7406,7407]
 #SBATCH --reservation=worker_test
 ##SBATCH -C ib-icelake
 ##SBATCH --time=40:00:00
