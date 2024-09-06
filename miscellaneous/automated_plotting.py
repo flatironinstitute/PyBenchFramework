@@ -27,12 +27,14 @@ def create_data_list(full_or_not, all_list):
 
     all_result_list = []
     
+    #print("here create_data_list")
     if len(all_list) == 1:
         if full_or_not:
-            all_result_list = full_paths(all_list[0])
+            all_result_list.append(list(full_paths(all_list[0])))
         elif not full_or_not:
             partial_paths()
-        return first_result_list
+        #print(all_result_list)
+        return all_result_list
     '''
     if second_list == 0:
         if full_or_not:
@@ -59,30 +61,10 @@ def create_data_list(full_or_not, all_list):
             #for i in all_list:
             all_result_list.append(list(full_paths(path_list_element)))
     
+    #print(all_result_list)
     return all_result_list
     print("All list lengths match")
     
-    
-    ''' 
-    if len(first_list) != len(second_list):
-        print ("List lengths must match")
-        sys.exit()
-    else:
-        print(f"List lengths match. List 1 length {len(first_list)}, list 2 length {len(second_list)}")
-        #print(f"{first_list}, {second_list}")
-    
-    if full_or_not:
-        first_result_list, second_result_list = full_paths(first_list, second_list)
-        #nodes_list1, bw_list1, iops_list1, processor_counts1 = first_result_list[0]
-        #nodes_list2, bw_list2, iops_list2, processor_counts2 = second_result_list[0]
-    elif not full_or_not:
-        partial_paths()
-
-    return first_result_list, second_result_list
-    '''
-    #print(first_result_list[0])
-    #print(second_result_list[0])
-
 def partial_paths(first_list, second_list):
     print("Partial paths code to be written...")
 
@@ -94,55 +76,29 @@ def full_paths(all_job_list):
     
     all_result_list = []
 
+    #print(all_job_list)
+    #print(len(all_job_list))
     if len(all_job_list) == 1:
-        for i in range(len(all_job_list[0])):
+        for i in range(len(all_job_list)):
             try:
-                first_result_list.append(list(mod_return_FIO_data(all_job_list[0][i], "testing_func", "4M")))
+                first_result_list.append(list(mod_return_FIO_data(all_job_list[i], "testing_func", "4M")))
             except TypeError:
                 print(f"Issue with returning FIO data from path provided '{all_job_list[0][i]}'") 
                 sys.exit()
 
         return first_result_list
 
-    '''
-    if second_list == 0:
-        for i in range(len(first_list)):
-            try:
-                first_result_list.append(list(mod_return_FIO_data(first_list[i], "testing_func", "4M")))
-            except TypeError:
-                print(f"Issue with returning FIO data from path provided '{first_list[i]}'") 
-                sys.exit()
-
-        return first_result_list
-    '''
     for list_instance in all_job_list:
-    
-        #for i in range(len(list_instance)):
-        #    print(f"{list_instance[i]}")
         try:
+            #print("list_instance")
             all_result_list.append(list(mod_return_FIO_data(list_instance, "testing_func", "4M")))
+            #print(list(mod_return_FIO_data(list_instance, "testing_func", "4M")))
         except TypeError:
             print(f"Issue with returning FIO data from path provided '{list_instance[i]}'") 
             sys.exit()
         #print("LIST INSTANCE IS FINISHED")
     return all_result_list
-    '''
-    for i in range(len(first_list)):
-        print(f"{first_list[i]}, {second_list[i]}")
-        print("")
-        try:
-            first_result_list.append(list(mod_return_FIO_data(first_list[i], "testing_func", "4M")))
-        except TypeError:
-            print(f"Issue with returning FIO data from path provided '{first_list[i]}'") 
-            sys.exit()
-        try:
-            second_result_list.append(list(mod_return_FIO_data(second_list[i], "testing_func", "4M")))
-        except TypeError:
-            print(f"Issue with returning FIO data from path provided '{second_list[i]}'") 
-            sys.exit()
 
-    return first_result_list, second_result_list
-    '''
 #def extract_paths_from_file(filepaths, one_path):
 def extract_paths_from_file(filepath, one_path):
     
@@ -234,15 +190,18 @@ if __name__ == "__main__":
     if not args['one_path']:
         #first_result_list, second_result_list = create_data_list(full_or_not, first_job_list, second_job_list)
         all_result_list = create_data_list(full_or_not, all_job_list)
+        #print(all_result_list)
         for i in all_result_list:
+            #print("Here?")
             #print(i)
+            #print(len(i))
             #print("LIST ELEMENT FINISHED")
             #print("\n")
-            print(i)
+            ##print(i)
             plot_and_compare(i)
         #plot_and_compare(first_result_list, second_result_list)
     else:
-        first_result_list = create_data_list(full_or_not, first_job_list, 0)
+        first_result_list = create_data_list(full_or_not, first_job_list)
         for i in range(len(first_job_list)):
-            fig, ax1, ax2 = plot_serverless_FIO(first_job_list[i], "testing auto plot", "_4K")
-            plt.savefig(f"plot_util/tmp/result4K{i}.svg", format="svg")
+            fig, ax1, ax2 = plot_serverless_FIO(first_job_list[i], "testing auto plot", "4M")
+            plt.savefig(f"plot_util/archive/compare_rep3_kernel_ssd_for_consistency/result{i}.svg", format="svg")

@@ -202,18 +202,8 @@ def mod_return_FIO_data(directory, title, block_size, optional_plot_block_size=N
 def plot_and_compare(all_result_list):
     #Do I need lists or dicts of lists
     #How about two dicts that each have lists as values for each key?
-    '''
-    for lists in all_result_list:
-        node_list = []
-        bw_list = []
-        iops_list = []
-        proc_list = []
-        plot_title = ''
-
-        for i in range(len(lists[0])):
-            node_list.append(), bw_list.append(), iops_list.append(), proc_list.append(), plot_title = lists[i]     
-    '''
     num_plots = len(all_result_list)  # Determine the number of plots needed
+    print(num_plots)
     fig, axs = plt.subplots(1, num_plots, figsize=(7 * num_plots, 7), sharey=True)
 
     if num_plots == 1:
@@ -221,9 +211,13 @@ def plot_and_compare(all_result_list):
 
     filename = []
 
+    print(len(all_result_list))
+    print(all_result_list)
     for idx, lists in enumerate(all_result_list):
 
-        #print(lists)
+        print(lists)
+        print(len(lists))
+
         node_list, bw_list, iop_list, proc_list, plot_title = lists
 
         ax = axs[idx]
@@ -238,7 +232,7 @@ def plot_and_compare(all_result_list):
         ax.set_title(plot_title[0])
         ax.legend(title='Type of run')
 
-        filename.append(plot_title[0].strip(" "))
+        filename.append(re.split('-',plot_title[0].strip(" "))[0])
         #print(filename1)
         #print(filename2)
 
@@ -249,44 +243,5 @@ def plot_and_compare(all_result_list):
     final_filename = final_filename.replace("\n", "")
     print(final_filename)
 
-    plt.savefig(f"plot_util/tmp/{final_filename}.svg", format="svg")
+    plt.savefig(f"plot_util/archive/compare_rep3_kernel_ssd_for_consistency/{final_filename}.svg", format="svg")
     
-    '''
-    for i in range(len(first_result_list)):
-        node_list1, bw_list1, iop_list1, proc_list1, plot1_title = first_result_list[i]
-        node_list2, bw_list2, iop_list2, proc_list2, plot2_title = second_result_list[i]
-
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7), sharey=True)
-
-        for i in range(len(node_list1)):
-            ax1.plot(node_list1[i], bw_list1[i], '-o', label=f'{proc_list1[i]}_jobs')
-            ax2.plot(node_list2[i], bw_list2[i], '-o', label=f'{proc_list2[i]}_jobs')
-
-        ax1.xaxis.set_major_locator(MultipleLocator(2))
-        ax1.set_xlabel('nodes')
-        ax1.set_ylabel('GB/s')
-        ax1.set_title(plot1_title)
-        ax1.legend(title='Type of run')
-
-        ax2.xaxis.set_major_locator(MultipleLocator(2))
-        ax2.set_xlabel('nodes')
-        ax2.set_ylabel('GB/s')
-        ax2.set_title(plot2_title)
-        ax2.legend(title='Type of run')
-
-        print(plot1_title[0])
-        print(plot2_title[0])
-        filename1 = plot1_title[0].strip(" ")
-        filename2 = plot2_title[0].strip(" ")
-        print(filename1)
-        print(filename2)
-
-        filename = f"{filename1}_{filename2}"
-        print(filename)
-        filename = filename.replace(" ", "_")
-        filename = filename.replace("\n", "")
-        print(filename)
-
-        plt.savefig(f"plot_util/tmp/{filename}.svg", format="svg")
-        #Need first plot title and second plot title. Also need file name or else have to create it out of the two plot titles
-        '''
