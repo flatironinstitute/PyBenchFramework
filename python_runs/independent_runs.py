@@ -66,6 +66,12 @@ def serverless_fio(args, PyBench_root_dir):
         with open(f"{log_dir}/job_note.txt", 'w') as file:
             file.write(args['job_note'])
 
+    if args['file_size']:
+        pass
+    else:
+        print( "Must specify a file size for FIO to write out..." )
+        sys.exit()
+
     hostname = socket.gethostname()
     
     #put this code into miscellaneous

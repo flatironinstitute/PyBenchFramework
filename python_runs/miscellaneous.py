@@ -23,6 +23,7 @@ def reset_file_contents(original_file_contents, args, job_count, single_block_si
     file_contents = file_contents.replace("__io_type_var__", args['io_type'])
     file_contents = file_contents.replace("__time_var__",f"{args['time']}")
     file_contents = file_contents.replace("__hostname__",f"{socket.gethostname()}")
+    file_contents = file_contents.replace("__file_size__",f"{args['file_size']}")
 
     return file_contents
 

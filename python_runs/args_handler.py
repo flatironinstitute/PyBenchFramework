@@ -45,6 +45,7 @@ def handle_arguments():
     parser.add_argument('--read-data', type=str, help="Should mdtest read data from the files? Either 0 for no or a number of bytes (mdtest)")
     
     #fio portion
+    parser.add_argument('--file-size', type=str, help="Specify the size of the file FIO should write out (per process)")
     parser.add_argument('--block-size', type=str, help="Block size that FIO should read/write at.")
     parser.add_argument('--job-number', type=str, help="Number or sequence of number of jobs per node that FIO should run. e.g '1,5,10,15'. This is per node count in --node-count")
     parser.add_argument('--time', type=int, help="Number of seconds that FIO should run for.")
