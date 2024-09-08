@@ -43,6 +43,7 @@ def wrap_mdtest(args, PyBench_root_dir):
             tmp_rank = int(rank)
             node_type = int(node)
             tmp_rank = node_type * tmp_rank
+            ranks_per_node = int(tmp_rank / node_type)
             for files_per_rank in files_per_rank_list:
                 if total_files_optimized != 0:
                     files_per_rank = total_files_optimized / tmp_rank
@@ -52,7 +53,7 @@ def wrap_mdtest(args, PyBench_root_dir):
                 print (f"ranks are {tmp_rank} and type is {type(tmp_rank)}, nodes are {node_type} and type is {type(node_type)}")
                 mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{files_per_rank}_files_per_rank"] = handler_class.mdtestTool()
 
-                mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{files_per_rank}_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=out_file, write_data=f"{write_data}", read_data=f"{read_data}", node_count=f"{node_type}")
+                mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{files_per_rank}_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=out_file, write_data=f"{write_data}", read_data=f"{read_data}", ranks_per_node=f"{ranks_per_node}")
             
                 with open(f"{command_log_dir}/mdtest_command_{node_type}_nodes_{tmp_rank}_ranks_{files_per_rank}_files_per_rank", 'a') as file:
                     file.write(f"The following is the mdtest command")
@@ -65,6 +66,7 @@ def wrap_mdtest(args, PyBench_root_dir):
                 
                 start_time, end_time, elapsed_time = benchmark_tools.mdtest_start_end_elapsed_time(out_file)
                 
+                #elapsed_time, out_file, tmp_log_dir, tmp_log_filename, lower_threshold, higher_threshold, log_dir, args, among others
                 if elapsed_time <= 59 or elapsed_time >= 90:
                     while elapsed_time <= 59 or elapsed_time >= 90:
                         source = out_file
@@ -81,7 +83,7 @@ def wrap_mdtest(args, PyBench_root_dir):
                         out_file = f"{log_dir}/mdtest_output_{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank_timed"
                         
                         mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank"] = handler_class.mdtestTool()
-                        mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{new_files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=out_file, write_data=f"{write_data}", read_data=f"{read_data}", node_count=f"{node_type}")
+                        mdtest_obj_dict[f"{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{new_files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=out_file, write_data=f"{write_data}", read_data=f"{read_data}", ranks_per_node=f"{ranks_per_node}")
                         with open(f"{command_log_dir}/mdtest_command_{node_type}_nodes_{tmp_rank}_ranks_{new_files_per_rank}_new_files_per_rank_timed", 'a') as file:
                             file.write(f"The following is the mdtest command")
                             tmp_cmd_string = ""

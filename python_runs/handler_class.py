@@ -154,6 +154,8 @@ class newIORTool(BenchmarkTool):
         output_file = params.get('output_file')
         output_format = params.get('output_format')
         deadline_for_stonewalling = params.get('deadline_for_stonewalling')
+        io_type = params.get('io_type')
+        use_existing_file = params.get('use_existing_file')
 
         # Required parameter: output file
         if mpi_ranks:
@@ -190,10 +192,18 @@ class newIORTool(BenchmarkTool):
         else:
             pass
 
+        if io_type == 'write':
+            self.command.extend(['-w'])
+        elif io_type == 'read':
+            self.command.extend(['-r'])
+
         self.command.extend(['-k'])
-        self.command.extend(['-i', '10000000'])
-        self.command.extend(['-T', '1'])
+        #self.command.extend(['-i', '1000'])
+        #self.command.extend(['-T', '1'])
         self.command.extend(['-F'])
+
+        if use_existing_file is True:
+            self.command.extend(['-E'])
 
         # Required parameter: output file
         output_file = params.get('output_file')
@@ -233,9 +243,10 @@ class mdtestTool(BenchmarkTool):
         test_repetition = params.get('test_repetition')
         directory = params.get('directory')
         offset = params.get('offset')
-        node_count = params.get('node_count')
+        #node_count = params.get('node_count')
         write_into_file = params.get('write_data')
         read_from_file = params.get('read_data')
+        ranks_per_node = params.get('ranks_per_node')
 
         # Required parameter: output file
         if mpi_ranks:
@@ -246,8 +257,8 @@ class mdtestTool(BenchmarkTool):
         self.command.append("--map-by")
         self.command.append("node")
         
-        if node_count:
-            self.command.extend(["-N", str(node_count)])
+        if ranks_per_node:
+            self.command.extend(["-N", str(ranks_per_node)])
         
         self.command.append("--verbose")
         self.command.append("mdtest")
