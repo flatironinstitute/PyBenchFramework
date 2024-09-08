@@ -3,10 +3,9 @@
 #SBATCH -e logs/mdtest-%j.err
 #SBATCH -p scc
 #SBATCH --nodes=24
-#SBATCH --nodelist=worker[7372-7374,7377-7379,7382-7397,7406,7407]
+##SBATCH --nodelist=worker[7372-7374,7377-7379,7382-7397,7406,7407]
+#SBATCH --exclude=submit_scripts/nodes_to_exclude
 #SBATCH --reservation=worker_test
-##SBATCH -C ib-icelake
-##SBATCH --time=40:00:00
 #SBATCH --exclusive
 
 first_node=$(echo $SLURM_JOB_NODELIST | cut -d '-' -f 1 | awk -F '[' '{ print $1$2 }')
