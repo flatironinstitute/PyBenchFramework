@@ -1,7 +1,6 @@
 source ~/python_environments/computer_vision/bin/activate
 
-#replace with path to the root of the git repo
+#replace with the path to the root of the git repo
 export PyBench_root_dir="/mnt/home/skrit/Documents/testing_clones/clone1/PyBenchFramework"
 
-export PATH=$PATH:/mnt/home/skrit/Documents/apps/io500/bin
-module load openmpi/4.0.7
+module load openmpi/4.0.7 ior/mpi-3.3.0 
