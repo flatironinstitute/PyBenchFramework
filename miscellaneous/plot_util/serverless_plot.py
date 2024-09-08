@@ -105,8 +105,14 @@ def plot_serverless_FIO(directory, title, block_size, optional_plot_block_size=N
 def return_FIO_data(directory, title, block_size, optional_plot_block_size=None):
     
     # Find all files matching the pattern "combined*.json"
-    file_pattern = f"{directory}/combined*{block_size}.json"
+    upper_block_size = block_size.upper()
+    lower_block_size = block_size.lower()
+
+    file_pattern = f"{directory}/combined*{upper_block_size}*"
     files = glob.glob(file_pattern)
+    if not files:
+        file_pattern = f"{directory}/combined*{lower_block_size}*"
+        files = glob.glob(file_pattern)
 
     # Dictionary to store parsed data
     data = {}
@@ -175,12 +181,18 @@ def return_FIO_data(directory, title, block_size, optional_plot_block_size=None)
         iops = []
     return nodes_list, bw_list, iops_list, processor_counts
 
-def mod_return_FIO_data(directory, title, block_size, optional_plot_block_size=None):
-    nodes_list, bw_list, iops_list, processor_counts = return_FIO_data(directory, title, block_size)
+def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_block_size=None):
     plot_title = []
     tmp_title = ''
 
     identifier = re.split('/', directory)[2]
+    print(benchmark)
+    if benchmark.upper() == "IOR" or benchmark.lower() == "ior":
+        identifier = re.split('/', directory)[3]
+        nodes_list, bw_list, iops_list, processor_counts = return_FIO_data(directory, title, block_size, "1M")
+    else:
+        nodes_list, bw_list, iops_list, processor_counts = return_FIO_data(directory, title, block_size)
+
     
     try:
         with open (f"{directory}/job_note.txt", 'r') as file:
@@ -199,7 +211,7 @@ def mod_return_FIO_data(directory, title, block_size, optional_plot_block_size=N
     return nodes_list, bw_list, iops_list, processor_counts, plot_title
 
 #def plot_and_compare(first_result_list, second_result_list):
-def plot_and_compare(all_result_list):
+def plot_and_compare(all_result_list, output_path):
     #Do I need lists or dicts of lists
     #How about two dicts that each have lists as values for each key?
     num_plots = len(all_result_list)  # Determine the number of plots needed
@@ -243,5 +255,5 @@ def plot_and_compare(all_result_list):
     final_filename = final_filename.replace("\n", "")
     print(final_filename)
 
-    plt.savefig(f"plot_util/archive/compare_rep3_kernel_ssd_for_consistency/{final_filename}.svg", format="svg")
+    plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     
