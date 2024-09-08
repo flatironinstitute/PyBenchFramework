@@ -26,6 +26,34 @@ def reset_file_contents(original_file_contents, args, job_count, single_block_si
 
     return file_contents
 
+def load_ior_json_results(filename, log_dir):
+    data = {}
+    strings_to_remove = ["Writing output to ", "WARNING:"]
+    
+    name_without_path = re.split("/", filename)[len(re.split("/",filename)) - 1]
+
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+
+    with open(f"{log_dir}/tmp_files/{name_without_path}.unedited", 'w') as file:
+        file.writelines(lines)
+
+    filtered_lines = [line for line in lines if not any(s in line for s in strings_to_remove)]
+
+    with open(filename, 'w') as file:
+        file.writelines(filtered_lines)
+
+    with open(filename, 'r') as file:
+        try:
+            data = json.load(file)
+        except json.JSONDecodeError:
+            print(f"IOR workflow: Error decoding JSON From file: {filename}")
+    
+    bw = data['tests'][0]['Results'][0][0]['bwMiB']
+    iops = data['tests'][0]['Results'][0][0]['iops']
+    
+    return bw, iops
+
 def load_json_results(filename):
     data = {}
     if filename.endswith(".json"):

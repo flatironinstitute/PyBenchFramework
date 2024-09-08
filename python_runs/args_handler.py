@@ -33,7 +33,8 @@ def handle_arguments():
     parser.add_argument('--fsync', type=str, help="fsync")
     parser.add_argument('--output-file', type=str, help="output file")
     parser.add_argument('--output-format', type=str, help="output format")
-    parser.add_argument('--deadline_for_stonewalling', type=int, help="Run IOR in timed mode instead of an indefinite time. All ranks stop at the same time.")
+    parser.add_argument('--deadline-for-stonewalling', type=int, help="Run IOR in timed mode instead of an indefinite time. All ranks stop at the same time.")
+    parser.add_argument('--use-existing-file', type=bool, help="Use existing test file")
 
     #mdtest portion
     parser.add_argument('--mpi-ranks', type=str, help="Number of MPI ranks per node to use")

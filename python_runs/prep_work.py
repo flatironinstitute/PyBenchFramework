@@ -7,6 +7,9 @@ def prep_work(args, PyBench_root_dir):
     job_number = args['slurm_job_number']
 
     log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
+    if args['benchmark'] == "newIORTool":
+        log_dir = f"{PyBench_root_dir}/results/iortest/{args['io_type']}/{args['platform_type']}/{job_number}"
+    
     command_log_dir = f"{log_dir}/commands"
     network_log_dir = f"{PyBench_root_dir}/network_stats/{job_number}"
     test_files_log = f"{PyBench_root_dir}/examples/test_files"

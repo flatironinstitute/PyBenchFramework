@@ -1,0 +1,16 @@
+testFile: /mnt/cephtest-fi5k/test-rep3-ssd/skrit/ior/testFile
+mpi_ranks: '48,16' 
+node_count: 20,16,8
+block_size: "16m"
+segment_count: 512 
+reorder_tasks: 1
+fsync: 1
+output_format: "JSON"
+output_file: "IOR_output_test"
+transfer_size: "1m"
+deadline_for_stonewalling: 5 
+io_type: "read"
+use_existing_file: 1
+platform_type: "test-rep3-ssd"
+job_note: "First test of the full workflow + plotting for IOR. Plot Title: first sequence test"
+unit_restart: 1
