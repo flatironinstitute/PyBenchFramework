@@ -1,14 +1,13 @@
-#mpi_ranks: 40,30,20,10,5 
 mpi_ranks: 16,8,4,2,1
-#directory: /mnt/cephtestk/test-ec63/skrit/mdtest
 directory: /mnt/cephtest-fi5k/test-rep3-ssd/skrit/mdtest 
 files_per_rank: 1000 
 test_repetition: 3
 slurm_job_number:
 io_type: metadata
-platform_type: kernel_EC63 
+platform_type: nvme_cephtest-fi5k 
 offset: 1
 #write_data: '3901'
 #read_data: '3901'
 #node_count: 10,5,1
 node_count: 2,4,8,16,24
+timed: 60,90

@@ -43,6 +43,7 @@ def handle_arguments():
     parser.add_argument('--offset', type=str, help="Should there be a node offset? (if yes, 1, else ommit flag) (mdtest)")
     parser.add_argument('--write-data', type=str, help="Should mdtest write data into the files? Either 0 for no or a number of bytes (mdtest)")
     parser.add_argument('--read-data', type=str, help="Should mdtest read data from the files? Either 0 for no or a number of bytes (mdtest)")
+    parser.add_argument('--timed', type=str, help="Specify the lower bound and upper bound of the time that the test should run for. Avoid values too close together. Units are seconds.")
     
     #fio portion
     parser.add_argument('--file-size', type=str, help="Specify the size of the file FIO should write out (per process)")
