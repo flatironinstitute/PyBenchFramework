@@ -1,4 +1,5 @@
 import glob
+import sys
 import json
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
@@ -257,3 +258,46 @@ def plot_and_compare(all_result_list, output_path):
 
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     
+def convert_mdtest_data(job_directory):
+    key_list = {"Directory creation",
+            "Directory stat",
+            "Directory removal",
+            "File creation",
+            "File stat",
+            "File read",
+            "File removal",
+            "Tree creation",
+            "Tree removal"
+            }
+    values = ["Max",
+            "Min",
+            "Mean",
+            "Std Dev"
+            ]
+    
+    file_pattern = f"{job_directory}/mdtest*rank"
+    files = glob.glob(file_pattern)
+
+    for i in files:
+        only_filename = re.split('/',i)[len(re.split('/',i)) - 1]
+        filename_list = re.split('_',only_filename)
+        num_ranks = filename_list[4]
+        num_nodes = filename_list[2]
+        files_per_rank = filename_list[6]
+
+        with open (i, 'r') as file:
+            for line in file:
+                tmp_dict = {}
+                tmp = line.strip()
+                line_list = re.split(r'[ \t]{2,}',tmp)
+                if line_list[0] in key_list:
+                    tmp_dict['operation'] = line_list[0]
+                    tmp_dict['ranks_per_node'] = num_ranks
+                    tmp_dict['node_count'] = num_nodes
+                    tmp_dict['files_per_rank'] = files_per_rank
+                    for element_index in range(2,len(line_list)):
+                        tmp_dict[values[element_index-2]] = line_list[element_index]
+                    json_data = json.dumps(tmp_dict, indent=4)
+                    print(json_data)
+                    print(i)
+            sys.exit()

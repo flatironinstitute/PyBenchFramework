@@ -1,4 +1,4 @@
-from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data
+from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data, convert_mdtest_data
 import sys
 import re
 import argparse
@@ -23,34 +23,36 @@ def handle_arguments():
     return args_dict
 
 def create_data_list(full_or_not, all_list,benchmark,block_size):
-#def create_data_list(full_or_not, first_list, second_list):
 
     first_result_list = []
     second_result_list = []
 
     all_result_list = []
     
-    #print("here create_data_list")
-    if len(all_list) == 1:
+    all_job_list = []
+    for i in all_list:
+        
+        tmp_sub_job_list = []
+        for j in i:
+            if not j:
+                pass
+            else:
+                tmp_sub_job_list.append(j)
+        
+        all_job_list.append(tmp_sub_job_list)
+    
+    if len(all_job_list) == 1:
         if full_or_not:
-            all_result_list.append(list(full_paths(all_list[0],benchmark,block_size)))
+            all_result_list.append(list(full_paths(all_job_list[0],benchmark,block_size)))
         elif not full_or_not:
             partial_paths()
         #print(all_result_list)
         return all_result_list
-    '''
-    if second_list == 0:
-        if full_or_not:
-            first_result_list = full_paths(first_list, 0)
-        elif not full_or_not:
-            partial_paths()
-        return first_result_list
-    '''
     
     first_length = -1
     first_iter = 0
 
-    for path_list_element in all_list:
+    for path_list_element in all_job_list:
         if first_length == -1:
             first_length = len(path_list_element)
         else:
@@ -61,7 +63,7 @@ def create_data_list(full_or_not, all_list,benchmark,block_size):
                 sys.exit()
 
         if full_or_not:
-            #for i in all_list:
+            #for i in all_job_list:
             all_result_list.append(list(full_paths(path_list_element,benchmark,block_size)))
     
     #print(all_result_list)
@@ -71,7 +73,6 @@ def create_data_list(full_or_not, all_list,benchmark,block_size):
 def partial_paths(first_list, second_list):
     print("Partial paths code to be written...")
 
-#def full_paths(first_list, second_list):
 def full_paths(all_job_list, benchmark, block_size):
 
     first_result_list = []
@@ -79,30 +80,37 @@ def full_paths(all_job_list, benchmark, block_size):
     
     all_result_list = []
 
-    #print(all_job_list)
-    #print(len(all_job_list))
-    if len(all_job_list) == 1:
-        for i in range(len(all_job_list)):
-            try:
-                first_result_list.append(list(mod_return_FIO_data(all_job_list[i], "testing_func", block_size, benchmark)))
-            except TypeError:
-                print(f"Issue with returning FIO data from path provided '{all_job_list[0][i]}'") 
-                sys.exit()
+    print(f"Length of all job list = {len(all_job_list)}")
 
+    if len(all_job_list) == 1:
+        if benchmark.upper == "IOR" or benchmark.lower() == "ior" or benchmark.upper == "FIO" or benchmark.lower() == "fio":
+            for i in range(len(all_job_list)):
+                try:
+                    first_result_list.append(list(mod_return_FIO_data(all_job_list[i], "testing_func", block_size, benchmark)))
+                except TypeError:
+                    print(f"Issue with returning FIO data from path provided '{all_job_list[0][i]}'") 
+                    sys.exit()
+        if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest":
+            convert_mdtest_data(all_job_list[0])
+            #print(f"These are the jobs read from the input file: {all_job_list}")
+            #print( "MDTEST workflow --------" )
+            sys.exit()
         return first_result_list
 
     for list_instance in all_job_list:
-        try:
-            #print("list_instance")
-            all_result_list.append(list(mod_return_FIO_data(list_instance, "testing_func", block_size, benchmark)))
-            #print(list(mod_return_FIO_data(list_instance, "testing_func", "4M")))
-        except TypeError:
-            print(f"Issue with returning FIO data from path provided '{list_instance[i]}'") 
+        if benchmark.upper == "IOR" or benchmark.lower() == "ior" or benchmark.upper == "FIO" or benchmark.lower() == "fio":
+            try:
+                all_result_list.append(list(mod_return_FIO_data(list_instance, "testing_func", block_size, benchmark)))
+            except TypeError:
+                print(f"Issue with returning FIO data from path provided '{list_instance[i]}'") 
+                sys.exit()
+        if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest":
+            #print(f"These are the jobs read from the input file: {all_job_list}")
+            #print( "MDTEST workflow multiple --------" )
+            convert_mdtest_data(all_job_list[i])
             sys.exit()
-        #print("LIST INSTANCE IS FINISHED")
     return all_result_list
 
-#def extract_paths_from_file(filepaths, one_path):
 def extract_paths_from_file(filepath, one_path):
     
     first_job_list = []
@@ -110,8 +118,6 @@ def extract_paths_from_file(filepath, one_path):
     
     all_job_list = []
 
-    
-    #for filepath in filepaths:
     try:
         with open (filepath, 'r') as file:
             for line in file:
@@ -120,15 +126,9 @@ def extract_paths_from_file(filepath, one_path):
                 tmp_line = tmp_line.replace("\n",'')
 
                 if one_path:
-                    #first_job_list.append(tmp_line)
                     all_job_list.append(tmp_line)
                 else:
-                    #first_job_list.append(re.split(',', tmp_line)[0])
-                    #second_job_list.append(re.split(',', tmp_line)[1])
                     all_job_list.append(re.split(',', tmp_line))
-                    #print(re.split(',', tmp_line))
-                    #print("FILE LIST ELEMENT IS FINISHED")
-                    #print("")
     except FileNotFoundError:
         print(f"File not found {filepath}")
         sys.exit()
@@ -140,32 +140,6 @@ def extract_paths_from_file(filepath, one_path):
         return first_job_list
 
     return all_job_list
-    '''
-
-    try:
-        with open (filepath, 'r') as file:
-            for line in file:
-                remove_quotes = line.replace('"','')
-                tmp_line = remove_quotes.replace(' ','')
-                tmp_line = tmp_line.replace("\n",'')
-
-                if one_path:
-                    first_job_list.append(tmp_line)
-                else:
-                    first_job_list.append(re.split(',', tmp_line)[0])
-                    second_job_list.append(re.split(',', tmp_line)[1])
-    except FileNotFoundError:
-        print(f"File not found {filepath}")
-        sys.exit()
-    except IndexError:
-        print(f"One of the lines in the file does not follow the format <first path> <second path>. Please ensure each line contains two paths, seperated by a comma.")
-        sys.exit()
-
-    if one_path:
-        return first_job_list
-
-    return first_job_list, second_job_list
-    '''
 
 if __name__ == "__main__":
     
@@ -191,33 +165,23 @@ if __name__ == "__main__":
         if benchmark.upper() == "IOR" or benchmark.lower() == "ior" or benchmark.upper() == "FIO" or benchmark.lower() =="fio":
             print("Block size not provided! Please provide the block size when running this script for FIO or IOR!")
             sys.exit()
+        else:
+            block_size = None
 
     if 'file' in args and args['file'] is not None and not args['one_path']:
-        #first_job_list,second_job_list = extract_paths_from_file(args['file'], 0)
         all_job_list = extract_paths_from_file(args['file'], 0)
     elif 'file' in args and args['file'] is not None and args['one_path']:
         first_job_list = extract_paths_from_file(args['file'], args['one_path'])
 
     elif 'paths' in args.keys():
         first_job_list.append(re.split(',', args['paths'])[0])
-        #print(first_job_list)
         second_job_list.append(re.split(',', args['paths'])[1])
-        #print(second_job_list)
 
     full_or_not = args['full_paths']
     if not args['one_path']:
-        #first_result_list, second_result_list = create_data_list(full_or_not, first_job_list, second_job_list)
         all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
-        #print(all_result_list)
         for i in all_result_list:
-            #print("Here?")
-            #print(i)
-            #print(len(i))
-            #print("LIST ELEMENT FINISHED")
-            #print("\n")
-            ##print(i)
             plot_and_compare(i, output_path)
-        #plot_and_compare(first_result_list, second_result_list)
     else:
         first_result_list = create_data_list(full_or_not, first_job_list,benchmark, block_size)
         for i in range(len(first_job_list)):
