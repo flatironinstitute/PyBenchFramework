@@ -1,5 +1,5 @@
 import glob
-import sys
+import sys, os
 import json
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
@@ -211,7 +211,98 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
     #print (nodes_list, bw_list, iops_list, processor_counts, plot_title)
     return nodes_list, bw_list, iops_list, processor_counts, plot_title
 
-#def plot_and_compare(first_result_list, second_result_list):
+def plot_and_compare_mdtest(result_list, output_path):
+    num_plots = len(result_list)
+    print(num_plots)
+    fig, axs = plt.subplots(1, num_plots, figsize=(7 * num_plots, 7), sharey=True)
+
+    if num_plots ==1:
+        axs = [axs]
+
+    filename = []
+
+    for idx,file_lists in enumerate(result_list):
+        all_dict = {}
+        ax = axs[idx]
+        for lists in file_lists:
+            tmp_list = []
+            node_list = []
+            ranks_per_node_list = []
+            mean_performance_list = []
+            for dicts in lists:
+                #print(dicts)
+                if dicts['operation'] == 'Directory creation':
+                    ranks_per_node = int(dicts['ranks_per_node'])
+                    node_count = int(dicts['node_count'])
+                    files_per_rank = float(dicts['files_per_rank'])
+                    mean_performance = float(dicts['Mean'])
+                    tmp_list.append(node_count)
+                    tmp_list.append(ranks_per_node)
+                    tmp_list.append(mean_performance)
+                    tmp_list.append(files_per_rank)
+
+                    #node_list.append(node_count)
+                    #mean_performance_list.append(mean_performance)
+            if ranks_per_node not in all_dict:
+                all_dict[ranks_per_node] = []
+            all_dict[ranks_per_node].append(tmp_list)
+        #print(all_dict)
+        sorted_data = {k: v for k, v in sorted(all_dict.items(), key=lambda item: item[0])}
+        for key in sorted_data:
+            sorted_data[key] = sorted(sorted_data[key], key=lambda x: x[0])
+            #print(sorted_data[key])
+
+        #print(sorted_data)
+    
+        #from collections import OrderedDict
+        nodes = []
+        mean_perf = []
+        files_per_rank = []
+        ranks_per_node = []
+
+        nodes_list = []
+        mean_perf_list = []
+        files_per_rank_list = []
+        ranks_per_node_counts = []
+
+        for key in sorted_data:
+
+            for value in sorted_data[key]:
+                nodes.append(value[0])
+                mean_perf.append(value[2])
+                files_per_rank.append(value[3])
+
+            nodes_list.append(nodes)
+            mean_perf_list.append(mean_perf)
+            files_per_rank_list.append(files_per_rank)
+            ranks_per_node_counts.append(key)
+
+            nodes = []
+            mean_perf = []
+            files_per_rank = [] 
+        
+        print(nodes_list, mean_perf_list, ranks_per_node_counts)
+        for i in range(len(nodes_list)):
+            ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]}')
+
+        ax.xaxis.set_major_locator(MultipleLocator(2))
+        ax.set_xlabel('nodes')
+        ax.set_ylabel('OPS/sec')
+        ax.set_title('Directory Creation')
+        ax.legend(title='Type of run')
+
+    #filename.append()
+
+    #filename = f"{filename1}_{filename2}"
+    #final_filename = "_".join(filename)
+    #print(final_filename)
+    #final_filename = final_filename.replace(" ", "_")
+    #final_filename = final_filename.replace("\n", "")
+    #print(final_filename)
+    final_filename = 'test_mdtest_dir_plotting'
+
+    plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
+    
 def plot_and_compare(all_result_list, output_path):
     #Do I need lists or dicts of lists
     #How about two dicts that each have lists as values for each key?
@@ -267,15 +358,20 @@ def convert_mdtest_data(job_directory):
             "File read",
             "File removal",
             "Tree creation",
-            "Tree removal"
+            "Tree removal",
+            "Operation"
             }
-    values = ["Max",
+    values = ["Operation",
+            "Max",
             "Min",
             "Mean",
             "Std Dev"
             ]
     
-    file_pattern = f"{job_directory}/mdtest*rank"
+    if not os.path.exists(f"{job_directory}/json_output"):
+        os.makedirs(f"{job_directory}/json_output")
+
+    file_pattern = f"{job_directory}/mdtest*ranks*"
     files = glob.glob(file_pattern)
 
     for i in files:
@@ -285,19 +381,41 @@ def convert_mdtest_data(job_directory):
         num_nodes = filename_list[2]
         files_per_rank = filename_list[6]
 
+        #tmp_dict = {}
+        tmp_list = []
         with open (i, 'r') as file:
             for line in file:
-                tmp_dict = {}
-                tmp = line.strip()
+                tmp = line.strip().replace(':','')
                 line_list = re.split(r'[ \t]{2,}',tmp)
+                
                 if line_list[0] in key_list:
+                    #print(line_list)
+                    tmp_dict = {}
                     tmp_dict['operation'] = line_list[0]
                     tmp_dict['ranks_per_node'] = num_ranks
                     tmp_dict['node_count'] = num_nodes
                     tmp_dict['files_per_rank'] = files_per_rank
-                    for element_index in range(2,len(line_list)):
-                        tmp_dict[values[element_index-2]] = line_list[element_index]
-                    json_data = json.dumps(tmp_dict, indent=4)
-                    print(json_data)
-                    print(i)
-            sys.exit()
+                    for element_index in range(1,len(line_list)):
+                        #print(f"{values[element_index-2]} = {line_list[element_index]}")
+                        tmp_dict[values[element_index]] = line_list[element_index]
+                    tmp_list.append(tmp_dict)
+        json_data = json.dumps(tmp_list, indent=4)
+        with open (f"{job_directory}/json_output/{only_filename}.json", 'w') as json_file:
+            json_file.write(json_data)
+                    
+def read_mdtest_json_data(job_directory):
+    json_dir = f"{job_directory}/json_output"
+
+    file_pattern = f"{json_dir}/mdtest*.json"
+    files = glob.glob(file_pattern)
+
+    one_job_result_list = []
+
+    for i in files:
+        dict_list = []
+        with open(i, 'r') as json_file:
+            dict_list = json.load(json_file)     
+        
+        one_job_result_list.append(dict_list)
+    #print(all_result_list)
+    return one_job_result_list 
