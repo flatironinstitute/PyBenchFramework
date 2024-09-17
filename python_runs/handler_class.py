@@ -1,4 +1,5 @@
 import subprocess
+import yaml
 import json
 from abc import ABC, abstractmethod
 import time
@@ -196,7 +197,13 @@ class newIORTool(BenchmarkTool):
             self.command.extend(['-w'])
         elif io_type == 'read':
             self.command.extend(['-r'])
+        '''
+        list_of_opts = [ "api", "refNum", "blockSize", "collective", "reorderTasksConstant", "interTestDelay", "deadlineForStonewalling", "fsync", "useExistingTestFile", "scriptFile", "filePerProc", "intraTestBarriers", "setTimeStampSignature", "showHelp", "showHints", "repetitions", "individualDataSets", "outlierThreshold", "setAlignment", "keepFile", "keepFileWithError", "data", "multiFile", "memoryPerNode", "noFill", "numTasks", "testFile", "string", "preallocate", "useSharedFilePointer", "quitOnError", "taskPerNodeOffset", "readFile", "checkRead", "segmentCount", "useStridedDatatype", "transferSize", "maxTimeDuration", "uniqueDir", "hintsFileName", "verbose", "useFileView", "writeFile", "checkWrite", "singleXferAttempt", "reorderTasksRandomSeed", "fsyncPerWrite", "randomOffset", "reorderTasksRandom" ]
 
+        with open (config_file, 'r') as opts_file:
+            config = yaml.safe_load(opts_file)
+            print(config)
+        '''
         self.command.extend(['-k'])
         #self.command.extend(['-i', '1000'])
         #self.command.extend(['-T', '1'])

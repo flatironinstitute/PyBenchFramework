@@ -2,6 +2,7 @@ import glob
 import sys, os
 import json
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.ticker import MultipleLocator
 import re
 
@@ -224,27 +225,35 @@ def plot_and_compare_mdtest(result_list, output_path):
     for idx,file_lists in enumerate(result_list):
         all_dict = {}
         ax = axs[idx]
-        for lists in file_lists:
+        #for lists in file_lists:
+        #print(file_lists)
+        #print('')
+        #print('')
+        for dataframe in file_lists:
             tmp_list = []
             node_list = []
             ranks_per_node_list = []
             mean_performance_list = []
-            for dicts in lists:
-                #print(dicts)
-                if dicts['operation'] == 'Directory creation':
-                    ranks_per_node = int(dicts['ranks_per_node'])
-                    node_count = int(dicts['node_count'])
-                    files_per_rank = float(dicts['files_per_rank'])
-                    mean_performance = float(dicts['Mean'])
-                    tmp_list.append(node_count)
-                    tmp_list.append(ranks_per_node)
-                    tmp_list.append(mean_performance)
-                    tmp_list.append(files_per_rank)
+            #print(dataframe)
+            #print(type(dataframe))
+            #sys.exit()
+            #print(dicts)
+            #if dicts['operation'] == 'Directory creation':
 
-                    #node_list.append(node_count)
-                    #mean_performance_list.append(mean_performance)
+            ranks_per_node = int(dataframe.loc[dataframe['operation'] == 'File creation', 'ranks_per_node'].values[0])
+            node_count = int(dataframe.loc[dataframe['operation'] == 'File creation', 'node_count'].values[0])
+            files_per_rank = float(dataframe.loc[dataframe['operation'] == 'File creation', 'files_per_rank'].values[0])
+            mean_performance = float(dataframe.loc[dataframe['operation'] == 'File creation', 'Mean'].values[0])
+            tmp_list.append(node_count)
+            tmp_list.append(ranks_per_node)
+            tmp_list.append(mean_performance)
+            tmp_list.append(files_per_rank)
+
+                #node_list.append(node_count)
+                #mean_performance_list.append(mean_performance)
             if ranks_per_node not in all_dict:
                 all_dict[ranks_per_node] = []
+            #print(tmp_list)
             all_dict[ranks_per_node].append(tmp_list)
         #print(all_dict)
         sorted_data = {k: v for k, v in sorted(all_dict.items(), key=lambda item: item[0])}
@@ -253,6 +262,7 @@ def plot_and_compare_mdtest(result_list, output_path):
             #print(sorted_data[key])
 
         #print(sorted_data)
+        #sys.exit()
     
         #from collections import OrderedDict
         nodes = []
@@ -281,7 +291,7 @@ def plot_and_compare_mdtest(result_list, output_path):
             mean_perf = []
             files_per_rank = [] 
         
-        print(nodes_list, mean_perf_list, ranks_per_node_counts)
+        #print(nodes_list, mean_perf_list, ranks_per_node_counts)
         for i in range(len(nodes_list)):
             ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]}')
 
@@ -383,39 +393,46 @@ def convert_mdtest_data(job_directory):
 
         #tmp_dict = {}
         tmp_list = []
+        dynamic_key_list = []
         with open (i, 'r') as file:
             for line in file:
                 tmp = line.strip().replace(':','')
                 line_list = re.split(r'[ \t]{2,}',tmp)
                 
                 if line_list[0] in key_list:
-                    #print(line_list)
-                    tmp_dict = {}
-                    tmp_dict['operation'] = line_list[0]
-                    tmp_dict['ranks_per_node'] = num_ranks
-                    tmp_dict['node_count'] = num_nodes
-                    tmp_dict['files_per_rank'] = files_per_rank
-                    for element_index in range(1,len(line_list)):
-                        #print(f"{values[element_index-2]} = {line_list[element_index]}")
-                        tmp_dict[values[element_index]] = line_list[element_index]
-                    tmp_list.append(tmp_dict)
-        json_data = json.dumps(tmp_list, indent=4)
-        with open (f"{job_directory}/json_output/{only_filename}.json", 'w') as json_file:
-            json_file.write(json_data)
-                    
+                    if line_list[0] == "Operation":
+                        dynamic_key_list = line_list
+                    else:
+                        tmp_dict = {}
+                        tmp_dict['operation'] = line_list[0]
+                        tmp_dict['ranks_per_node'] = num_ranks
+                        tmp_dict['node_count'] = num_nodes
+                        tmp_dict['files_per_rank'] = files_per_rank
+                        for el_index in range(len(line_list)):
+                            tmp_dict[dynamic_key_list[el_index]] = line_list[el_index]
+                        tmp_list.append(tmp_dict)
+
+            df = pd.DataFrame(tmp_list)
+        json_data = df.to_json(f"{job_directory}/json_output/{only_filename}_dataframe.json", orient="records")
+
 def read_mdtest_json_data(job_directory):
     json_dir = f"{job_directory}/json_output"
 
-    file_pattern = f"{json_dir}/mdtest*.json"
+    #file_pattern = f"{json_dir}/mdtest*.json"
+    file_pattern = f"{json_dir}/mdtest*dataframe.json"
     files = glob.glob(file_pattern)
 
     one_job_result_list = []
 
     for i in files:
-        dict_list = []
-        with open(i, 'r') as json_file:
-            dict_list = json.load(json_file)     
+        #dict_list = []
+        df = pd.DataFrame()
+        #with open(i, 'r') as json_file:
+        #    dict_list = json.load(json_file)     
+        df = pd.read_json(i,orient="records")
+        #print(df)
+        #sys.exit()
         
-        one_job_result_list.append(dict_list)
+        one_job_result_list.append(df)
     #print(all_result_list)
     return one_job_result_list 
