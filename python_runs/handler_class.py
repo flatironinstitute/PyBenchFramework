@@ -88,46 +88,88 @@ class BenchmarkTool(ABC):
             print ("noscrub was unset before this module completed, please ensure that is intended...")
 
     def run(self):
-        
+
         try:
+            # Start the subprocess and wait for it to finish
             start_time = time.time()
-            result = subprocess.run(self.command, capture_output=True, text=True, check=True)
+            result = subprocess.run(self.command, capture_output=False, text=True, check=True)
             end_time = time.time()
             elapsed_time = end_time - start_time
 
-            # Print standard output if the command succeeds
+            # The subprocess has finished at this point
             print(datetime.now().time(), f"Time to complete: {elapsed_time}, Standard Output:")
             print(result.stdout)
             sys.stdout.flush()
+
+            # Write the standard output (expected to be JSON) to the output file
+            #output_file = self.params['output_file']
+            #with open(output_file, 'w') as file:
+            #    file.write(result.stdout)  # Assuming the application prints JSON to stdout
+
         except subprocess.CalledProcessError as e:
             print("Error occurred:")
             print(f"Return code: {e.returncode}")
             print("Standard Error output:")
             print(e.stderr)
             sys.stdout.flush()
+            sys.stderr.flush()
 
-        if self.output_format == "json" and 'output' in self.params:
-            output_file = self.params['output_file']
-            max_retries = 3
-            attempts = 0
-            while attempts < max_retries:
-                if os.path.exists(output_file):
-                    with open(output_file, 'r') as file:
-                        return json.load(file)
-                time.sleep(20)  # Wait for 10 seconds before retrying
-                print("...Waiting for output file...")
-                attempts += 1
-            print("Output file not found after several attempts.")
-            sys.stdout.flush()
-        else:
-            output_file = self.params['output_file']
-            with open(output_file, 'a') as file:
-                file.write(result.stdout)
 
-        #turn scrubbing back on
-        #self.set_scrub()
+class test_ior_tool(BenchmarkTool):
+
+    def setup_command(self, **params):
+        super().setup_command(**params)
+
+        self.command = ["mpirun"]
         
-        #return result.stdout
+        config_params = params.get('config')
+
+        mpi_ranks = params.get('mpi_ranks') 
+        filename = config_params['filename']
+        ranks_per_node = params.get('ranks_per_node')
+        output_file = params.get('output_file')
+        output_format = config_params
+        
+        # Required parameter: output file
+        if mpi_ranks:
+            self.command.extend(["-n", str(mpi_ranks)])
+        else:
+            raise ValueError("Number of MPI ranks must be specified (--mpi-ranks)")
+
+        self.command.append("--map-by")
+        self.command.append("node")
+        
+        if ranks_per_node:
+            self.command.extend(["-N", str(ranks_per_node)])
+        
+        self.command.append("--verbose")
+        self.command.append("ior")
+
+        not_iteratable = ['mpi_ranks', 'node_count', 'filename', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file']
+
+        if filename:
+            self.command.extend(["-o", str(filename)])
+        else:
+            raise ValueError("filename must be specified.")
+
+        #print(config_params)
+        for param, value in config_params.items():
+            if param not in not_iteratable:
+                self.command.extend([f"-{param}={str(value)}"])
+            if param == 'config_options':
+                for key, val in value.items():
+                    self.command.extend([f"-{key}={str(val)}"])
+            if param == 'command_extensions':
+                for i in value:
+                    self.command.extend([f"-{i}"])
+
+        if output_file:
+            self.command.extend(['-O', f"summaryFile={output_file}"])
+        else:
+            raise ValueError("Output file must be specified")
+
+    def parse_output(self, output):
+        return "IOR no parsing yet."
 
 class newIORTool(BenchmarkTool):
     #pass
