@@ -101,11 +101,6 @@ class BenchmarkTool(ABC):
             print(result.stdout)
             sys.stdout.flush()
 
-            # Write the standard output (expected to be JSON) to the output file
-            #output_file = self.params['output_file']
-            #with open(output_file, 'w') as file:
-            #    file.write(result.stdout)  # Assuming the application prints JSON to stdout
-
         except subprocess.CalledProcessError as e:
             print("Error occurred:")
             print(f"Return code: {e.returncode}")
@@ -274,6 +269,30 @@ class newIORTool(BenchmarkTool):
 
     def parse_output(self, output):
         return "IOR no parsing yet."
+
+#class test_mdtest_tool(BenchmarkTool):
+'''
+    def setup_command(self, **params):
+        super().setup_command(**params)
+
+        self.command = ["mpirun"]
+
+        config_params = params.get('config')
+
+        mpi_ranks = params.get('mpi_ranks')
+        files_per_rank = params.get('files_per_rank')
+        test_repetition = params.get('test_repetition')
+        directory = params.get('directory')
+        offset = params.get('offset')
+        #node_count = params.get('node_count')
+        write_into_file = params.get('write_data')
+        read_from_file = params.get('read_data')
+        ranks_per_node = params.get('ranks_per_node')
+
+        not_iteratable = ['mpi_ranks', 'node_count', 'filename', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file']
+
+#    pass
+'''
 
 class mdtestTool(BenchmarkTool):
     def setup_command(self, **params):

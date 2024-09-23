@@ -8,22 +8,22 @@ blockSize: "4m"
 transferSize: "1m"
 output_file: "IOR_output_test"
 platform_type: "test-rep3-ssd"
-unit_restart: 1 
+unit_restart: 1
 job_note: "Third test of the full workflow + plotting for IOR. Plot Title: First sequence test"
-io_type: "IOR_read"
+io_type: "IOR_write"
 
 # List of key-value pairs with various data types
 config_options:
   O: "summaryFormat=JSON"
   M: "60%"
-  D: "60"
+  D: "90"
 
 # List of command extensions (not key-value pairs, just values)
 command_extensions:
   - "k"
   - "F"
   - "E"
-  - "r"
+  - "w"
   - "C"
   - "e"
 
