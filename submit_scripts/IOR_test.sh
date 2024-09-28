@@ -4,7 +4,7 @@
 #SBATCH -p scc
 #SBATCH --nodes=20
 #SBATCH --exclusive
-#SBATCH --comment "FI_JOB_RESOURCES=cephfs[cluster=cephtest-fi5,type=fuse],cephfs[cluster=cephtest-fi5,type=kernel]"
+#SBATCH --comment "FI_JOB_RESOURCES=cephfs[cluster=cephtest-fi5,type=fuse,lock],cephfs[cluster=cephtest-fi5,type=kernel,lock]"
 #SBATCH -C genoa
 
 # Define root directory

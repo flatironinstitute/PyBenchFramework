@@ -38,20 +38,29 @@ def load_ior_json_results(filename, log_dir):
 
     with open(f"{log_dir}/tmp_files/{name_without_path}.unedited", 'w') as file:
         file.writelines(lines)
+        file.flush()
 
     filtered_lines = [line for line in lines if not any(s in line for s in strings_to_remove)]
 
     with open(filename, 'w') as file:
         file.writelines(filtered_lines)
+        file.flush()
 
     with open(filename, 'r') as file:
         try:
             data = json.load(file)
         except json.JSONDecodeError:
             print(f"IOR workflow: Error decoding JSON From file: {filename}")
-    
-    bw = data['tests'][0]['Results'][0][0]['bwMiB']
-    iops = data['tests'][0]['Results'][0][0]['iops']
+    try: 
+        bw = data['tests'][0]['Results'][0][0]['bwMiB']
+        iops = data['tests'][0]['Results'][0][0]['iops']
+    except KeyError as e:
+        print(f'''Key 'tests' not found for either:
+        bw = data['tests'][0]['Results'][0][0]['bwMiB']
+        iops = data['tests'][0]['Results'][0][0]['iops']
+        In JSON decode of file: {filename}''')
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}. IOR, filename: {filename}")
     
     return bw, iops
 

@@ -1,6 +1,6 @@
 testFile: /mnt/cephtest-fi5k/test-rep3-ssd/skrit/ior/testFile
 mpi_ranks: '48,16'
-node_count: 20,16,8
+node_count: 1 
 block_size: "16m"
 segment_count: 1024 
 reorder_tasks: 1

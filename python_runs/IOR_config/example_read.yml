@@ -14,8 +14,8 @@ io_type: "IOR_read"
 
 # List of key-value pairs with various data types
 config_options:
-  O: "summaryFormat=JSON"
-  M: "60%"
+  O: summaryFormat=JSON
+  M: "10%"
   D: "60"
 
 # List of command extensions (not key-value pairs, just values)
