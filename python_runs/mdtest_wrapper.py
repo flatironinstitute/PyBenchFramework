@@ -61,7 +61,7 @@ def wrap_mdtest(args, PyBench_root_dir):
                 print (f"ranks per node are {ranks_per_node} and type is {type(ranks_per_node)}, nodes are {node_type} and type is {type(node_type)}")
                 mdtest_obj_dict[f"{node_type}_nodes_{ranks_per_node}_ranks_{files_per_rank}_files_per_rank"] = handler_class.mdtestTool()
 
-                mdtest_obj_dict[f"{node_type}_nodes_{ranks_per_node}_ranks_{files_per_rank}_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=out_file, write_data=f"{write_data}", read_data=f"{read_data}", ranks_per_node=f"{ranks_per_node}")
+                mdtest_obj_dict[f"{node_type}_nodes_{ranks_per_node}_ranks_{files_per_rank}_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=out_file, write_data=f"{write_data}", read_data=f"{read_data}", ranks_per_node=f"{ranks_per_node}", write_output=1)
             
                 with open(f"{command_log_dir}/mdtest_command_{node_type}_nodes_{ranks_per_node}_ranks_{files_per_rank}_files_per_rank", 'a') as file:
                     file.write(f"The following is the mdtest command")
@@ -93,7 +93,7 @@ def wrap_mdtest(args, PyBench_root_dir):
                             out_file = f"{log_dir}/mdtest_output_{node_type}_nodes_{ranks_per_node}_ranks_{new_files_per_rank}_new_files_per_rank_timed"
                             
                             mdtest_obj_dict[f"{node_type}_nodes_{ranks_per_node}_ranks_{new_files_per_rank}_new_files_per_rank"] = handler_class.mdtestTool()
-                            mdtest_obj_dict[f"{node_type}_nodes_{ranks_per_node}_ranks_{new_files_per_rank}_new_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{new_files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=out_file, write_data=f"{write_data}", read_data=f"{read_data}", ranks_per_node=f"{ranks_per_node}")
+                            mdtest_obj_dict[f"{node_type}_nodes_{ranks_per_node}_ranks_{new_files_per_rank}_new_files_per_rank"].setup_command(config_file=f"{PyBench_root_dir}/{args['config']}", mpi_ranks=f"{tmp_rank}", files_per_rank=f"{new_files_per_rank}", test_repetition=f"{test_repetition}", directory=f"{directory}", offset=f"{offset}", output_file=out_file, write_data=f"{write_data}", read_data=f"{read_data}", ranks_per_node=f"{ranks_per_node}", write_output=1)
                             with open(f"{command_log_dir}/mdtest_command_{node_type}_nodes_{ranks_per_node}_ranks_{new_files_per_rank}_new_files_per_rank_timed", 'a') as file:
                                 file.write(f"The following is the mdtest command")
                                 tmp_cmd_string = ""

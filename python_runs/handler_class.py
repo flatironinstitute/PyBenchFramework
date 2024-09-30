@@ -90,16 +90,37 @@ class BenchmarkTool(ABC):
     def run(self):
 
         try:
-            # Start the subprocess and wait for it to finish
-            start_time = time.time()
-            result = subprocess.run(self.command, capture_output=False, text=True, check=True)
-            end_time = time.time()
-            elapsed_time = end_time - start_time
 
-            # The subprocess has finished at this point
-            print(datetime.now().time(), f"Time to complete: {elapsed_time}, Standard Output:")
-            print(result.stdout)
-            sys.stdout.flush()
+            # Open the output file for appending
+            if 'write_output' in self.params and self.params['write_output'] == 1:
+                with open(self.params['output_file'], 'a') as output_file:
+                    # Start the subprocess with stdout as PIPE to capture output
+                    start_time = time.time()
+
+                    # Run the command and capture output in real-time
+                    process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+                    # Read and print the output in real-time
+                    for line in process.stdout:
+                        # Print to terminal
+                        print(line, end='')
+
+                        # Write to the output file
+                        output_file.write(line)
+
+                    # Wait for the process to complete
+                    process.wait()
+
+                    end_time = time.time()
+                    elapsed_time = end_time - start_time
+
+                    print(datetime.now().time(), f"Time to complete: {elapsed_time}")
+            else:
+                # Start the subprocess and wait for it to finish
+                start_time = time.time()
+                result = subprocess.run(self.command, capture_output=False, text=True, check=True)
+                end_time = time.time()
+                elapsed_time = end_time - start_time
 
         except subprocess.CalledProcessError as e:
             print("Error occurred:")
@@ -270,8 +291,9 @@ class newIORTool(BenchmarkTool):
     def parse_output(self, output):
         return "IOR no parsing yet."
 
-#class test_mdtest_tool(BenchmarkTool):
 '''
+class test_mdtest_tool(BenchmarkTool):
+    pass
     def setup_command(self, **params):
         super().setup_command(**params)
 
@@ -280,17 +302,31 @@ class newIORTool(BenchmarkTool):
         config_params = params.get('config')
 
         mpi_ranks = params.get('mpi_ranks')
-        files_per_rank = params.get('files_per_rank')
-        test_repetition = params.get('test_repetition')
-        directory = params.get('directory')
-        offset = params.get('offset')
-        #node_count = params.get('node_count')
-        write_into_file = params.get('write_data')
-        read_from_file = params.get('read_data')
         ranks_per_node = params.get('ranks_per_node')
+        files_per_rank = params.get('files_per_rank')
+        directory = params.get('directory')
 
-        not_iteratable = ['mpi_ranks', 'node_count', 'filename', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file']
+        # Required parameter: output file
+        if mpi_ranks:
+            self.command.extend(["-n", str(mpi_ranks)])
+        else:
+            raise ValueError("Number of MPI ranks must be specified (--mpi-ranks)")
 
+        self.command.append("--map-by")
+        self.command.append("node")
+        
+        if ranks_per_node:
+            self.command.extend(["-N", str(ranks_per_node)])
+        
+        self.command.append("--verbose")
+        self.command.append("mdtest")
+
+        not_iteratable = ['mpi_ranks', 'node_count', 'filename', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file', 'timed']
+
+        #test_repetition = params.get('test_repetition')
+        #offset = params.get('offset')
+        #write_into_file = params.get('write_data')
+        #read_from_file = params.get('read_data')
 #    pass
 '''
 
@@ -347,6 +383,13 @@ class mdtestTool(BenchmarkTool):
         if offset:
             self.command.extend(["-N", str(offset)])
 
+        self.command.extend(["-Y"])
+        
+        if write_into_file: 
+            self.command.extend(["-w", f"{write_into_file}"])
+        if read_from_file:
+            self.command.extend(["-e", f"{read_from_file}"])
+
         # Required parameter: output file
         output_file = params.get('output_file')
         if output_file:
@@ -355,12 +398,6 @@ class mdtestTool(BenchmarkTool):
         else:
             raise ValueError("Output file must be specified")
 
-        self.command.extend(["-Y"])
-        
-        if write_into_file: 
-            self.command.extend(["-w", f"{write_into_file}"])
-        if read_from_file:
-            self.command.extend(["-e", f"{read_from_file}"])
     
     def parse_output(self, output):
         return "mdtest no parsing yet."
