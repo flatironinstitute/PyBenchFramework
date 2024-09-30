@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.ticker import MultipleLocator
 import re
+from plot_util.text_based_comparison import text_comparison, dataframe_to_table
 
 #from collections import defaultdict, OrderedDict
 
@@ -213,93 +214,142 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
     return nodes_list, bw_list, iops_list, processor_counts, plot_title
 
 def plot_and_compare_mdtest(result_list, output_path):
-    num_plots = len(result_list)
+    #num_plots = len(result_list)
+    num_plots = len(result_list) * 9
+    num_plot_cols = len(result_list)
     print(num_plots)
-    fig, axs = plt.subplots(1, num_plots, figsize=(7 * num_plots, 7), sharey=True)
-
-    if num_plots ==1:
-        axs = [axs]
+    print(len(result_list))
+    #print(result_list['title'])
+    
+    num_plot_rows = 1
+    if num_plots > num_plot_cols:
+        remainder = num_plots % num_plot_cols
+        if remainder == 0:
+            num_plot_rows = int(num_plots / num_plot_cols)
+        else:
+            num_plot_rows = int(num_plots // num_plot_cols + 1)
+    
+    #fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(5 * num_plot_cols, 5 * num_plot_rows), sharey=True)
+    fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(5 * num_plot_cols, 5 * num_plot_rows))
+    
+    #if num_plots ==1:
+    #    axs = [axs]
+   
+    if num_plots == 1:
+        axs = [axs]  # Ensure axs is a list with one element
+    elif num_plot_rows > 1 or num_plot_cols > 1:
+        axs = axs.flatten()  # Flatten the 2D array into a 1D array for easy indexing
 
     filename = []
-
-    for idx,file_lists in enumerate(result_list):
-        all_dict = {}
-        ax = axs[idx]
-        #for lists in file_lists:
-        #print(file_lists)
-        #print('')
-        #print('')
-        for dataframe in file_lists:
-            tmp_list = []
-            node_list = []
-            ranks_per_node_list = []
-            mean_performance_list = []
-            #print(dataframe)
-            #print(type(dataframe))
-            #sys.exit()
-            #print(dicts)
-            #if dicts['operation'] == 'Directory creation':
-
-            ranks_per_node = int(dataframe.loc[dataframe['operation'] == 'File creation', 'ranks_per_node'].values[0])
-            node_count = int(dataframe.loc[dataframe['operation'] == 'File creation', 'node_count'].values[0])
-            files_per_rank = float(dataframe.loc[dataframe['operation'] == 'File creation', 'files_per_rank'].values[0])
-            mean_performance = float(dataframe.loc[dataframe['operation'] == 'File creation', 'Mean'].values[0])
-            tmp_list.append(node_count)
-            tmp_list.append(ranks_per_node)
-            tmp_list.append(mean_performance)
-            tmp_list.append(files_per_rank)
-
-                #node_list.append(node_count)
-                #mean_performance_list.append(mean_performance)
-            if ranks_per_node not in all_dict:
-                all_dict[ranks_per_node] = []
-            #print(tmp_list)
-            all_dict[ranks_per_node].append(tmp_list)
-        #print(all_dict)
-        sorted_data = {k: v for k, v in sorted(all_dict.items(), key=lambda item: item[0])}
-        for key in sorted_data:
-            sorted_data[key] = sorted(sorted_data[key], key=lambda x: x[0])
-            #print(sorted_data[key])
-
-        #print(sorted_data)
-        #sys.exit()
     
-        #from collections import OrderedDict
-        nodes = []
-        mean_perf = []
-        files_per_rank = []
-        ranks_per_node = []
+    key_list = ["Directory creation",
+            "Directory stat",
+            "Directory removal",
+            "File creation",
+            "File stat",
+            "File read",
+            "File removal",
+            "Tree creation",
+            "Tree removal"
+            ]
+    plot_counter = 0
+    for op_index in range(len(key_list)):
 
-        nodes_list = []
-        mean_perf_list = []
-        files_per_rank_list = []
-        ranks_per_node_counts = []
+        for idx,file_lists in enumerate(result_list):
+            #for lists in file_lists:
+            #print(file_lists)
+            #print('')
+            #print('')
+            '''
+            print(f"IDX is: {idx}, op_index is: {op_index}")
+            if op_index == 0:
+                print(idx)
+            else:
+                print(idx+op_index)
 
-        for key in sorted_data:
+            tmp_op_index = op_index + 1
+            tmp_idx = idx + 1
+            print(tmp_idx+tmp_op_index)
+            '''
+            ax = axs[plot_counter]
+            plot_counter += 1
 
-            for value in sorted_data[key]:
-                nodes.append(value[0])
-                mean_perf.append(value[2])
-                files_per_rank.append(value[3])
+            all_dict = {}
+            #print(f"TYPE OF AX IS: {type(ax)}")
 
-            nodes_list.append(nodes)
-            mean_perf_list.append(mean_perf)
-            files_per_rank_list.append(files_per_rank)
-            ranks_per_node_counts.append(key)
+            for dataframe in file_lists:
+                tmp_list = []
+                node_list = []
+                ranks_per_node_list = []
+                mean_performance_list = []
+                #print(dataframe)
+                #print(type(dataframe))
+                #sys.exit()
+                #print(dicts)
+                #if dicts['operation'] == 'Directory creation':
 
+                ranks_per_node = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'ranks_per_node'].values[0])
+                node_count = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'node_count'].values[0])
+                files_per_rank = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'files_per_rank'].values[0])
+                mean_performance = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'Mean'].values[0])
+                tmp_list.append(node_count)
+                tmp_list.append(ranks_per_node)
+                tmp_list.append(mean_performance)
+                tmp_list.append(files_per_rank)
+
+                    #node_list.append(node_count)
+                    #mean_performance_list.append(mean_performance)
+                if ranks_per_node not in all_dict:
+                    all_dict[ranks_per_node] = []
+                #print(tmp_list)
+                all_dict[ranks_per_node].append(tmp_list)
+            #print(all_dict)
+            sorted_data = {k: v for k, v in sorted(all_dict.items(), key=lambda item: item[0])}
+            for key in sorted_data:
+                sorted_data[key] = sorted(sorted_data[key], key=lambda x: x[0])
+                #print(sorted_data[key])
+
+            #print(sorted_data)
+            #sys.exit()
+        
+            #from collections import OrderedDict
             nodes = []
             mean_perf = []
-            files_per_rank = [] 
-        
-        #print(nodes_list, mean_perf_list, ranks_per_node_counts)
-        for i in range(len(nodes_list)):
-            ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]}')
+            files_per_rank = []
+            ranks_per_node = []
 
-        ax.xaxis.set_major_locator(MultipleLocator(2))
-        ax.set_xlabel('nodes')
-        ax.set_ylabel('OPS/sec')
-        ax.set_title('Directory Creation')
-        ax.legend(title='Type of run')
+            nodes_list = []
+            mean_perf_list = []
+            files_per_rank_list = []
+            ranks_per_node_counts = []
+
+            for key in sorted_data:
+
+                for value in sorted_data[key]:
+                    nodes.append(value[0])
+                    mean_perf.append(value[2])
+                    files_per_rank.append(value[3])
+
+                nodes_list.append(nodes)
+                mean_perf_list.append(mean_perf)
+                files_per_rank_list.append(files_per_rank)
+                ranks_per_node_counts.append(key)
+
+                nodes = []
+                mean_perf = []
+                files_per_rank = [] 
+            
+            #print(nodes_list, mean_perf_list, ranks_per_node_counts)
+            for i in range(len(nodes_list)):
+                ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]}')
+
+            ax.xaxis.set_major_locator(MultipleLocator(2))
+            ax.set_xlabel('nodes')
+            ax.set_ylabel('OPS/sec')
+            ax.set_title(key_list[op_index])
+            if plot_counter % 2 != 0:
+                ax.sharey(axs[plot_counter - 1])
+            ax.legend(title='Type of run')
 
     #filename.append()
 
@@ -313,27 +363,30 @@ def plot_and_compare_mdtest(result_list, output_path):
 
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     
-def plot_and_compare(all_result_list, output_path):
+
+def plot_and_compare(all_result_list, output_path, list_of_lists):
     #Do I need lists or dicts of lists
     #How about two dicts that each have lists as values for each key?
     num_plots = len(all_result_list)  # Determine the number of plots needed
-    print(num_plots)
+    #print(num_plots)
+    #READ!!! for now the number of 'plot rows' is 2 because I want the single line of plots to sit on the first row and the table to sit on the second row. When this code is generalized to iterate over a whole list, the plot row count will have to be number of rows for plots + 1 (for the table), put differently: number_of_rows = (number_of_plots / number_of_columns) + 1
+    num_rows = 2
     fig, axs = plt.subplots(1, num_plots, figsize=(7 * num_plots, 7), sharey=True)
 
-    if num_plots == 1:
-        axs = [axs]
+    if num_rows == 1:
+        axs = [axs]  # Ensure axs is a list with one element
+    #elif num_rows > 1:
+    #    axs = axs.flatten()  # Flatten the 2D array into a 1D array for easy indexing
 
     filename = []
+    #print(len(all_result_list))
+    #print(all_result_list)
 
-    print(len(all_result_list))
-    print(all_result_list)
     for idx, lists in enumerate(all_result_list):
 
-        print(lists)
-        print(len(lists))
-
         node_list, bw_list, iop_list, proc_list, plot_title = lists
-
+        
+        # Calculate the row and column indices for the current subplot
         ax = axs[idx]
 
         for i in range(len(node_list)):
@@ -356,6 +409,10 @@ def plot_and_compare(all_result_list, output_path):
     final_filename = final_filename.replace(" ", "_")
     final_filename = final_filename.replace("\n", "")
     print(final_filename)
+    #return text from text comparison methods. Return outliers (highest differences between datapoints) in a table? And add some commentary...
+
+    # Add some global text (outside the plot area)
+    fig.text(0.5, 0.1, 'This is some text below the plot', ha='center', fontsize=12)
 
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     

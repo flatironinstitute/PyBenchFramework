@@ -1,8 +1,10 @@
 from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data, convert_mdtest_data, read_mdtest_json_data,plot_and_compare_mdtest
+from plot_util.text_based_comparison import *
 import sys
 import re
 import argparse
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def handle_arguments():
@@ -16,6 +18,7 @@ def handle_arguments():
     parser.add_argument('--benchmark', type=str, help="Specify which benchmark the results are coming from (FIO,IOR,MDTEST)")
     parser.add_argument('--output_path', type=str, help="Specify the output path.")
     parser.add_argument('--block_size', type=str, help="Specify the block size (FIO,IOR)")
+    parser.add_argument('--comparison', type=str, help="Specify the type of comparison you want to perform (temporrary)...")
 
     args = parser.parse_args()
     args_dict = vars(args)
@@ -171,6 +174,7 @@ if __name__ == "__main__":
         else:
             block_size = None
 
+
     if 'file' in args and args['file'] is not None and not args['one_path']:
         all_job_list = extract_paths_from_file(args['file'], 0)
     elif 'file' in args and args['file'] is not None and args['one_path']:
@@ -181,6 +185,11 @@ if __name__ == "__main__":
         second_job_list.append(re.split(',', args['paths'])[1])
 
     full_or_not = args['full_paths']
+    if 'comparison' in args.keys():
+        if args['comparison'] == 'text':
+            all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
+            text_comparison(all_result_list)
+            sys.exit()
     if not args['one_path']:
         all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
         for i in all_result_list:
@@ -188,7 +197,7 @@ if __name__ == "__main__":
                 #print("IN MDTEST WORKFLOW")
                 plot_and_compare_mdtest(i, output_path)
             else:
-                plot_and_compare(i, output_path)
+                plot_and_compare(i, output_path, all_result_list)
     else:
         first_result_list = create_data_list(full_or_not, first_job_list,benchmark, block_size)
         if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest":
