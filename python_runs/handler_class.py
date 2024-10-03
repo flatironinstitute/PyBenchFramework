@@ -333,8 +333,6 @@ class test_mdtest_tool(BenchmarkTool):
 class mdtestTool(BenchmarkTool):
     def setup_command(self, **params):
         super().setup_command(**params)
-
-        self.command = ["mpirun"]
         
         config_file = params.get('config_file')
         if config_file:
@@ -344,15 +342,14 @@ class mdtestTool(BenchmarkTool):
 
         mpi_ranks = params.get('mpi_ranks')
         files_per_rank = params.get('files_per_rank')
-        test_repetition = params.get('test_repetition')
         directory = params.get('directory')
-        offset = params.get('offset')
-        #node_count = params.get('node_count')
-        write_into_file = params.get('write_data')
-        read_from_file = params.get('read_data')
         ranks_per_node = params.get('ranks_per_node')
-
         # Required parameter: output file
+        output_file = params.get('output_file')
+        config_params = params.get('config')
+
+        self.command = ["mpirun"]
+
         if mpi_ranks:
             self.command.extend(["-n", str(mpi_ranks)])
         else:
@@ -372,36 +369,31 @@ class mdtestTool(BenchmarkTool):
         else:
             raise ValueError("Number of files per rank must be specified (--files-per-rank)")
 
-        if test_repetition:
-            self.command.extend(["-i", str(test_repetition)])
-        
         if directory:
             self.command.extend(["-d", directory])
         else:
             raise ValueError("Directory must be specified. (--directory)")
 
-        if offset:
-            self.command.extend(["-N", str(offset)])
-
-        self.command.extend(["-Y"])
-        
-        if write_into_file: 
-            self.command.extend(["-w", f"{write_into_file}"])
-        if read_from_file:
-            self.command.extend(["-e", f"{read_from_file}"])
-
-        # Required parameter: output file
-        output_file = params.get('output_file')
         if output_file:
             pass
             #self.command.extend([">>", str(output_file)])
         else:
             raise ValueError("Output file must be specified")
+        
+        not_iteratable = ['mpi_ranks', 'directory', 'files_per_rank', 'node_count', 'timed', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file', 'write_output']
 
-    
+        for param, value in config_params.items():
+            if param not in not_iteratable:
+                self.command.extend([f"-{param}={str(value)}"])
+            if param == 'config_options':
+                for key, val in value.items():
+                    self.command.extend([f"-{key}={str(val)}"])
+            if param == 'command_extensions':
+                for i in value:
+                    self.command.extend([f"-{i}"])
+
     def parse_output(self, output):
         return "mdtest no parsing yet."
-
 
 class FIOTool(BenchmarkTool):
     
