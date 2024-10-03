@@ -48,7 +48,6 @@ def plot_serverless_FIO(directory, title, block_size, optional_plot_block_size=N
     for key in sorted_data:
         sorted_data[key] = sorted(sorted_data[key], key=lambda x: x[0])
 
-    #print(sorted_data)
 
     #from collections import OrderedDict
     nodes = []
@@ -129,21 +128,44 @@ def return_FIO_data(directory, title, block_size, optional_plot_block_size=None)
         try:
             with open(file_el, 'r') as f:
                 content = json.load(f)
+                #if content == dict:
                 nodes = content["nodes"]
                 int_nodes = int(content["nodes"])
                 processors = content["processors"]
-                bw = content["bw"]
+                if "bw" in content:
+                    bw = content["bw"]/1e6
+                elif content["mbw"]:
+                    bw = content["mbw"]/1e3
                 iops = content["iops"]
                 tmplist.append(int_nodes)
                 tmplist.append(processors)
                 tmplist.append(bw)
                 tmplist.append(iops)
-
                 # Ensure the key exists in the dictionary
                 if processors not in data:
                     data[processors] = []
                 data[processors].append(tmplist)
-        
+                '''
+                else:
+                    for i in content:
+                        tmplist = []
+                        nodes = i["nodes"]
+                        int_nodes = int(i["nodes"])
+                        processors = i["processors"]
+                        bw = i["bw"]
+                        iops = i["iops"]
+                        access_type = i["access"]
+                        tmplist.append(int_nodes)
+                        tmplist.append(processors)
+                        tmplist.append(bw)
+                        tmplist.append(iops)
+                        tmplist.append(access_type)
+                        # Ensure the key exists in the dictionary
+                        if processors not in data:
+                            data[processors] = []
+                        data[processors].append(tmplist)
+                        #print(tmplist)                    
+                '''
         except FileNotFoundError:
             print(f"The file {file_el} was not found.")
 
@@ -151,7 +173,6 @@ def return_FIO_data(directory, title, block_size, optional_plot_block_size=None)
     for key in sorted_data:
         sorted_data[key] = sorted(sorted_data[key], key=lambda x: x[0])
 
-    #print(sorted_data)
 
     #from collections import OrderedDict
     nodes = []
@@ -168,10 +189,13 @@ def return_FIO_data(directory, title, block_size, optional_plot_block_size=None)
     
         for value in sorted_data[key]:
             nodes.append(value[0])
+            '''
             if optional_plot_block_size is None:
                 bws.append(value[2]/1e6)
             elif optional_plot_block_size == "1M":
                 bws.append(value[2]/1e3)
+            '''
+            bws.append(value[2])
             iops.append(value[3])
         
         nodes_list.append(nodes)
@@ -188,7 +212,7 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
     plot_title = []
     tmp_title = ''
 
-    identifier = re.split('/', directory)[2]
+    #identifier = re.split('/', directory)[2]
     print(benchmark)
     if benchmark.upper() == "IOR" or benchmark.lower() == "ior":
         identifier = re.split('/', directory)[3]
@@ -202,13 +226,14 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
             for line in file:
                 if "PLOT TITLE" in line.upper() or "plot title" in line.lower():
                     tmp_title = re.split(':', line)[1]
-                    plot_title.append(f"{identifier}-{tmp_title}")
+                    plot_title.append(f"{tmp_title}")
             if tmp_title == '':
                 print(f"Plot title not found for directory: {directory}")
-                plot_title.append(f"{identifier}-Title not found")
+                plot_title.append(f"Title not found")
     except FileNotFoundError:
         print(f"File {directory}/job_note.txt not found.")
         plot_title.append("Title not found")
+    
 
     #print (nodes_list, bw_list, iops_list, processor_counts, plot_title)
     return nodes_list, bw_list, iops_list, processor_counts, plot_title
@@ -230,7 +255,7 @@ def plot_and_compare_mdtest(result_list, output_path):
             num_plot_rows = int(num_plots // num_plot_cols + 1)
     
     #fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(5 * num_plot_cols, 5 * num_plot_rows), sharey=True)
-    fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(5 * num_plot_cols, 5 * num_plot_rows))
+    fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(6 * num_plot_cols, 6 * num_plot_rows))
     
     #if num_plots ==1:
     #    axs = [axs]
@@ -341,7 +366,7 @@ def plot_and_compare_mdtest(result_list, output_path):
             
             #print(nodes_list, mean_perf_list, ranks_per_node_counts)
             for i in range(len(nodes_list)):
-                ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]}')
+                ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]} ranks')
 
             ax.xaxis.set_major_locator(MultipleLocator(2))
             ax.set_xlabel('nodes')
@@ -349,17 +374,17 @@ def plot_and_compare_mdtest(result_list, output_path):
             ax.set_title(key_list[op_index])
             if plot_counter % 2 != 0:
                 ax.sharey(axs[plot_counter - 1])
-            ax.legend(title='Type of run')
+            ax.legend(title='Ranks per node')
 
     #filename.append()
 
     #filename = f"{filename1}_{filename2}"
-    #final_filename = "_".join(filename)
+    final_filename = "_".join(filename)
     #print(final_filename)
     #final_filename = final_filename.replace(" ", "_")
     #final_filename = final_filename.replace("\n", "")
     #print(final_filename)
-    final_filename = 'test_mdtest_dir_plotting'
+    final_filename = re.sub(r'[^A-Za-z0-9._-]+', '', 'test_mdtest_dir_plotting')
 
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     
@@ -400,20 +425,18 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
         ax.legend(title='Type of run')
 
         filename.append(re.split('-',plot_title[0].strip(" "))[0])
-        #print(filename1)
-        #print(filename2)
 
-        #filename = f"{filename1}_{filename2}"
     final_filename = "_".join(filename)
-    print(final_filename)
     final_filename = final_filename.replace(" ", "_")
     final_filename = final_filename.replace("\n", "")
+    final_filename = re.sub(r'[^A-Za-z0-9._-]+', '', final_filename)
     print(final_filename)
     #return text from text comparison methods. Return outliers (highest differences between datapoints) in a table? And add some commentary...
 
     # Add some global text (outside the plot area)
-    fig.text(0.5, 0.1, 'This is some text below the plot', ha='center', fontsize=12)
+    #fig.text(0.5, 0.1, 'This is some text below the plot', ha='center', fontsize=12)
 
+    #final_filename = "testing_fio_ior_compare"
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     
 def convert_mdtest_data(job_directory):

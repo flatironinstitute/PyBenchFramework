@@ -54,7 +54,6 @@ def create_data_list(full_or_not, all_list,benchmark,block_size):
     
     first_length = -1
     first_iter = 0
-
     for path_list_element in all_job_list:
         if first_length == -1:
             first_length = len(path_list_element)
@@ -127,14 +126,15 @@ def extract_paths_from_file(filepath, one_path):
     try:
         with open (filepath, 'r') as file:
             for line in file:
-                remove_quotes = line.replace('"','')
-                tmp_line = remove_quotes.replace(' ','')
-                tmp_line = tmp_line.replace("\n",'')
+                if line.strip():
+                    remove_quotes = line.replace('"','')
+                    tmp_line = remove_quotes.replace(' ','')
+                    tmp_line = tmp_line.replace("\n",'')
 
-                if one_path:
-                    all_job_list.append(tmp_line)
-                else:
-                    all_job_list.append(re.split(',', tmp_line))
+                    if one_path:
+                        all_job_list.append(tmp_line)
+                    else:
+                        all_job_list.append(re.split(',', tmp_line))
     except FileNotFoundError:
         print(f"File not found {filepath}")
         sys.exit()
