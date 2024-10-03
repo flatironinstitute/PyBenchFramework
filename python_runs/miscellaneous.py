@@ -3,6 +3,7 @@ import re
 import time
 import mmap
 import pathlib
+import yaml
 import json
 import socket
 import subprocess
@@ -51,16 +52,33 @@ def load_ior_json_results(filename, log_dir):
             data = json.load(file)
         except json.JSONDecodeError:
             print(f"IOR workflow: Error decoding JSON From file: {filename}")
+    bw = {}
+    iops = {}
+    
+    #account for multiple result types from IOR results files (read,write as opposed to just one or the other)
     try: 
-        bw = data['tests'][0]['Results'][0][0]['bwMiB']
-        iops = data['tests'][0]['Results'][0][0]['iops']
+        if len(data['tests'][0]['Results'][0]) == 1:
+            label = data['tests'][0]['Results'][0][0]['access']
+
+            bw[f"{label}"] = data['tests'][0]['Results'][0][0]['bwMiB']
+            iops[f"{label}"] = data['tests'][0]['Results'][0][0]['iops']
+        elif len(data['tests'][0]['Results'][0]) == 2:
+            label1 = data['tests'][0]['Results'][0][0]['access']
+            label2 = data['tests'][0]['Results'][0][1]['access']
+            
+            bw[f"{label1}"] = data['tests'][0]['Results'][0][0]['bwMiB'] 
+            bw[f"{label2}"] = data['tests'][0]['Results'][0][1]['bwMiB'] 
+            iops[f"{label1}"] = data['tests'][0]['Results'][0][0]['iops'] 
+            iops[f"{label2}"] = data['tests'][0]['Results'][0][1]['iops'] 
+
     except KeyError as e:
-        print(f'''Key 'tests' not found for either:
+        print(f'''Issue with results for either:
         bw = data['tests'][0]['Results'][0][0]['bwMiB']
         iops = data['tests'][0]['Results'][0][0]['iops']
         In JSON decode of file: {filename}''')
     except Exception as e:
         print(f"An unexpected error occurred: {e}. IOR, filename: {filename}")
+    
     
     return bw, iops
 
@@ -233,3 +251,32 @@ def restart_ceph_unit(path):
             print(f"{hostname} systemd unit for {path} is not becoming active")
             sys.exit(1)
 
+def get_config_params(config_file):
+
+    #enabling classes in handler_class.py to read a list object containing dicts parsed from the input YAML files
+    if config_file:
+        try:
+            with open (config_file, 'r') as opts_file:
+                config = yaml.safe_load(opts_file)
+        except yaml.YAMLError as e:
+            print(f"Error loading YAML file: {e}")
+        except FileNotFoundError as e:
+            print(f"File not found: {e}")
+        except Exception as e:
+            print(f"An unexpected error has occurred: {e}")
+    else:
+        raise ValueError("Configuration file must be specified.")
+
+    for key,value in config.items():
+        if key != "config_options" and key != "command_extensions":
+            print(f"{key}: {value}")
+        if key == "config_options":
+            print("Configuration options:")
+            for key,value in config["config_options"].items():
+                print (f"{key}: {value}")
+        if key == "command_extensions":
+            print("Command extensions:")
+            for i in config["command_extensions"]:
+                print(f"{i}")
+
+    return config

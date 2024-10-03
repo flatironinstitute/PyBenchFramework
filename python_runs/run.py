@@ -8,6 +8,7 @@ from multi_node import server_fio
 from mdtest_wrapper import wrap_mdtest 
 from IOR_wrapper import wrap_IOR
 from testIOR_wrapper import test_wrap_IOR
+from test_mdtest_wrapper import test_wrap_mdtest
 
 var_name = "PyBench_root_dir"
 
@@ -26,6 +27,8 @@ elif args['benchmark'] == 'fio-serverless':
     serverless_fio(args, PyBench_root_dir)
 elif args['benchmark'] == 'mdtest':
     wrap_mdtest(args, PyBench_root_dir)
+elif args['benchmark'] == 'testmdtest':
+    test_wrap_mdtest(args, PyBench_root_dir)
 elif args['benchmark'] == 'newIORTool':
     wrap_IOR(args, PyBench_root_dir)
 elif args['benchmark'] =='testIORTool':
