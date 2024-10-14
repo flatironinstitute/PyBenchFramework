@@ -55,15 +55,19 @@ def create_data_list(full_or_not, all_list,benchmark,block_size):
     first_length = -1
     first_iter = 0
     for path_list_element in all_job_list:
-        if first_length == -1:
-            first_length = len(path_list_element)
-        else:
-            if len(path_list_element) == first_length:
-                pass
+        '''
+        first_length = -1
+        for path in path_list_element:
+            print(len(path))
+            if first_length == -1:
+                first_length = len(path)
             else:
-                print(f"List lengths don't match, {path_list_element}")
-                sys.exit()
-
+                if len(path) == first_length:
+                    pass
+                else:
+                    print(f"List lengths don't match, {path_list_element}")
+                    sys.exit()
+        '''
         if full_or_not:
             #for i in all_job_list:
             all_result_list.append(list(full_paths(path_list_element,benchmark,block_size)))
@@ -82,7 +86,7 @@ def full_paths(all_job_list, benchmark, block_size):
     
     all_result_list = []
 
-    print(f"Length of all job list = {len(all_job_list)}")
+    #print(f"Length of all job list = {len(all_job_list)}")
 
     if len(all_job_list) == 1:
         if benchmark.upper == "IOR" or benchmark.lower() == "ior" or benchmark.upper == "FIO" or benchmark.lower() == "fio":
@@ -188,7 +192,14 @@ if __name__ == "__main__":
     if 'comparison' in args.keys():
         if args['comparison'] == 'text':
             all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
-            text_comparison(all_result_list)
+            #text_comparison(all_result_list)
+            #print(f"Length of result list: {len(all_result_list)}")
+            for i in all_result_list:
+                #print(f"Length of row: {len(i)}")
+                #print("-----------------------------------------------------------")
+                text_comparison(i, benchmark)
+                #sys.exit()
+
             sys.exit()
     if not args['one_path']:
         all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
