@@ -145,27 +145,6 @@ def return_FIO_data(directory, title, block_size, optional_plot_block_size=None)
                 if processors not in data:
                     data[processors] = []
                 data[processors].append(tmplist)
-                '''
-                else:
-                    for i in content:
-                        tmplist = []
-                        nodes = i["nodes"]
-                        int_nodes = int(i["nodes"])
-                        processors = i["processors"]
-                        bw = i["bw"]
-                        iops = i["iops"]
-                        access_type = i["access"]
-                        tmplist.append(int_nodes)
-                        tmplist.append(processors)
-                        tmplist.append(bw)
-                        tmplist.append(iops)
-                        tmplist.append(access_type)
-                        # Ensure the key exists in the dictionary
-                        if processors not in data:
-                            data[processors] = []
-                        data[processors].append(tmplist)
-                        #print(tmplist)                    
-                '''
         except FileNotFoundError:
             print(f"The file {file_el} was not found.")
 
@@ -213,7 +192,7 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
     tmp_title = ''
 
     #identifier = re.split('/', directory)[2]
-    print(benchmark)
+    #print(benchmark)
     if benchmark.upper() == "IOR" or benchmark.lower() == "ior":
         identifier = re.split('/', directory)[3]
         nodes_list, bw_list, iops_list, processor_counts = return_FIO_data(directory, title, block_size, "1M")
@@ -240,7 +219,7 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
 
 def plot_and_compare_mdtest(result_list, output_path):
     #num_plots = len(result_list)
-    num_plots = len(result_list) * 9
+    num_plots = len(result_list) * 7 
     num_plot_cols = len(result_list)
     print(num_plots)
     print(len(result_list))
@@ -273,71 +252,42 @@ def plot_and_compare_mdtest(result_list, output_path):
             "File creation",
             "File stat",
             "File read",
-            "File removal",
-            "Tree creation",
-            "Tree removal"
+            "File removal"
+            #"Tree creation",
+            #"Tree removal"
             ]
     plot_counter = 0
     for op_index in range(len(key_list)):
 
         for idx,file_lists in enumerate(result_list):
-            #for lists in file_lists:
-            #print(file_lists)
-            #print('')
-            #print('')
-            '''
-            print(f"IDX is: {idx}, op_index is: {op_index}")
-            if op_index == 0:
-                print(idx)
-            else:
-                print(idx+op_index)
-
-            tmp_op_index = op_index + 1
-            tmp_idx = idx + 1
-            print(tmp_idx+tmp_op_index)
-            '''
             ax = axs[plot_counter]
-            plot_counter += 1
 
             all_dict = {}
-            #print(f"TYPE OF AX IS: {type(ax)}")
 
             for dataframe in file_lists:
                 tmp_list = []
                 node_list = []
                 ranks_per_node_list = []
                 mean_performance_list = []
-                #print(dataframe)
-                #print(type(dataframe))
-                #sys.exit()
-                #print(dicts)
-                #if dicts['operation'] == 'Directory creation':
 
-                ranks_per_node = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'ranks_per_node'].values[0])
                 node_count = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'node_count'].values[0])
-                files_per_rank = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'files_per_rank'].values[0])
-                mean_performance = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'Mean'].values[0])
-                tmp_list.append(node_count)
-                tmp_list.append(ranks_per_node)
-                tmp_list.append(mean_performance)
-                tmp_list.append(files_per_rank)
+                if key_list[op_index] != "File read" and key_list[op_index] != "File removal" or node_count > 2:
+                    ranks_per_node = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'ranks_per_node'].values[0])
+                    files_per_rank = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'files_per_rank'].values[0])
+                    mean_performance = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'Mean'].values[0])
+                    tmp_list.append(node_count)
+                    tmp_list.append(ranks_per_node)
+                    tmp_list.append(mean_performance)
+                    tmp_list.append(files_per_rank)
 
-                    #node_list.append(node_count)
-                    #mean_performance_list.append(mean_performance)
-                if ranks_per_node not in all_dict:
-                    all_dict[ranks_per_node] = []
-                #print(tmp_list)
-                all_dict[ranks_per_node].append(tmp_list)
-            #print(all_dict)
+                    if ranks_per_node not in all_dict:
+                        all_dict[ranks_per_node] = []
+                    all_dict[ranks_per_node].append(tmp_list)
+
             sorted_data = {k: v for k, v in sorted(all_dict.items(), key=lambda item: item[0])}
             for key in sorted_data:
                 sorted_data[key] = sorted(sorted_data[key], key=lambda x: x[0])
-                #print(sorted_data[key])
 
-            #print(sorted_data)
-            #sys.exit()
-        
-            #from collections import OrderedDict
             nodes = []
             mean_perf = []
             files_per_rank = []
@@ -368,13 +318,23 @@ def plot_and_compare_mdtest(result_list, output_path):
             for i in range(len(nodes_list)):
                 ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]} ranks')
 
+
             ax.xaxis.set_major_locator(MultipleLocator(2))
             ax.set_xlabel('nodes')
             ax.set_ylabel('OPS/sec')
             ax.set_title(key_list[op_index])
-            if plot_counter % 2 != 0:
+            #ax.set_ylim(bottom=0)
+
+            if plot_counter % num_plot_cols != 0:
                 ax.sharey(axs[plot_counter - 1])
+                #max_y = max(max(mean_perf_list[i]),max(mean_perf_list[i-1]))
+                #ax.set_ylim(0, max_y * 1.1)
+
+            #print (f"Plot columns is: {num_plot_cols}. Plot_counter is {plot_counter}, modulo is {plot_counter % num_plot_cols}")
+
+            #ax.set_ylim(bottom=0)
             ax.legend(title='Ranks per node')
+            plot_counter += 1
 
     #filename.append()
 
@@ -395,13 +355,13 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
     num_plots = len(all_result_list)  # Determine the number of plots needed
     #print(num_plots)
     #READ!!! for now the number of 'plot rows' is 2 because I want the single line of plots to sit on the first row and the table to sit on the second row. When this code is generalized to iterate over a whole list, the plot row count will have to be number of rows for plots + 1 (for the table), put differently: number_of_rows = (number_of_plots / number_of_columns) + 1
-    num_rows = 2
+    #num_rows = 2
     fig, axs = plt.subplots(1, num_plots, figsize=(7 * num_plots, 7), sharey=True)
 
-    if num_rows == 1:
+    if num_plots == 1:
         axs = [axs]  # Ensure axs is a list with one element
-    #elif num_rows > 1:
-    #    axs = axs.flatten()  # Flatten the 2D array into a 1D array for easy indexing
+    elif num_plots > 1:
+        axs = axs.flatten()  # Flatten the 2D array into a 1D array for easy indexing
 
     filename = []
     #print(len(all_result_list))
@@ -412,6 +372,7 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
         node_list, bw_list, iop_list, proc_list, plot_title = lists
         
         # Calculate the row and column indices for the current subplot
+        #if num_rows != 1:
         ax = axs[idx]
 
         for i in range(len(node_list)):

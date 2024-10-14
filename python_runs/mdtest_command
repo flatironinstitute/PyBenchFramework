@@ -1,1 +1,0 @@
-mpirun -n 160 --map-by node bin/mdtest -n 1024 -i 3 -d /mnt/cephtestk/test-rep3/skrit/mdtest/tmp

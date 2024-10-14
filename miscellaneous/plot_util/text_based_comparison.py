@@ -29,8 +29,13 @@ def percentile_selection(row, df, column_key, percent):
     total_hits = 0
 
     total_hits = ((df[column_key] > comparator) & (df['index'] == 0)).sum()
+    num_rows_of_one_job = len(df[df['index'] == 1])
 
-    if (total_hits / total_rows * 100) <= percent_threshold:
+    #print(num_rows_of_one_job)
+    #print(total_rows)
+
+    #if (total_hits / (total_rows / (max(df['index'] + 1))* 100)) <= percent_threshold:
+    if (total_hits / num_rows_of_one_job * 100) <= percent_threshold:
         #print(f"Total hits: {total_hits}, Number of rows: {total_rows}, top 10%, standard dev: {comparator}")
         return 1
     else:
@@ -59,20 +64,26 @@ def calculate_mean(row, df, key):
     # Calculate the mean performance
     return pd.Series([mean, stdDev])
 
-def text_comparison (results_list):
+def text_comparison (results_list, benchmark):
     #print(f"Length of list is {len(results_list[0])}")
     named_results = []
 
     for i in results_list:
+        keys_counter = 0
+        new_dict = {}
         for j in i:
-            new_dict = {}
-            keys = ["node_list","bw_list","iops_list","processor_list","title"]
-            keys_counter = 0
-            for k in j:
-                new_dict[keys[keys_counter]] = k
-                keys_counter += 1
-                #print(k, "\n\n")
-            named_results.append(new_dict)
+            if benchmark == "fio":
+                keys = ["node_list","bw_list","iops_list","processor_list","title"]
+            elif benchmark == "ior":
+                keys = ["node_list","bw_list","iops_list","processor_list","title"]
+            #for k in j:
+            #print(f"{k} is going into {keys[keys_counter]} list...")
+            new_dict[keys[keys_counter]] = j 
+            keys_counter += 1
+            #print(k, "\n\n")
+        named_results.append(new_dict)
+    #print(named_results)
+    #sys.exit()
     
     initial_node_list = named_results[0]['node_list']
     initial_processor_list = named_results[0]['processor_list']
@@ -113,7 +124,7 @@ def text_comparison (results_list):
     columns = ['Node count', 'Job (Rank) count', 'Performance', 'Mean performance', 'IOPS', 'Mean IOPS']
 
     new_list = []
-    #keys = ["node_list","bw_list","iops_list","processor_list","title"]
+
 
     for i in named_results:
         for proc_index in range(len(i['processor_list'])):
@@ -128,25 +139,34 @@ def text_comparison (results_list):
                 new_dict['Performance (GB/s)'] = i['bw_list'][proc_index][node_count_index]
                 #new_dict['Mean performance (GB/s)'] = bw_mean[f"nodes_{new_dict['Node Count']}_procs_{new_dict['Job (Rank) count']}"]
                 new_dict['IOPS'] = i['iops_list'][proc_index][node_count_index]
+                new_dict['title'] = i['title']
                 #new_dict['Mean IOPS'] = iops_mean[f"nodes_{new_dict['Node Count']}_procs_{new_dict['Job (Rank) count']}"]
                 new_dict['index'] = named_results.index(i)
                 new_list.append(new_dict)
 
+    '''
     for i in new_list:
-        print(i,"\n")
+        if i['Node Count'] == 4 and i['Job (Rank) count'] == 48:
+            print(i,"\n")
+    sys.exit()
+    '''
+
     df = pd.DataFrame(new_list)
+    #print(df)
+    #sys.exit()
     #compare the element (for example, Perfromance (GB/s)) to the computed mean of that element (Mean performance (GB/s)) and isolate those data points which are in the top 10 percentile of all values sorted from highest removed from mean to lowest removed.
     df[['meanPerf', 'perfStdDev']] = df.apply(lambda row: calculate_mean(row, df,'Performance (GB/s)'), axis=1)
     df[['meanIOPS', 'iopsStdDev']] = df.apply(lambda row: calculate_mean(row, df,'IOPS'), axis=1)
     df['coefficient_of_variation'] =  df['perfStdDev'] / df['meanPerf'] * 100
-    df['top10CoV'] = df.apply(lambda row: percentile_selection(row, df, 'coefficient_of_variation', 10), axis=1)
+    df['top10CoV'] = df.apply(lambda row: percentile_selection(row, df, 'coefficient_of_variation', 25), axis=1)
     
     pd.set_option('display.max_rows', None)  # Show all rows
 
     #---------------------Instead of doing all those row operations for 'top10CoV', I can sort the dataframe then take the highest 10% based on coefficient_of_variation
     top10df = df[(df['top10CoV'] == 1) & (df['index'] == 0)]
-    print(top10df)
+    sorted_top10df = top10df.sort_values(by='coefficient_of_variation')
+    print(sorted_top10df)
     sorted_df = df.sort_values(by='coefficient_of_variation')
-    print(sorted_df)
+    #print(sorted_df)
 
     return df
