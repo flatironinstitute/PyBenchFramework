@@ -15,8 +15,8 @@ io_type: "IOR_write"
 # List of key-value pairs with various data types
 config_options:
   O: summaryFormat=JSON
-  M: "10%"
-  D: "90"
+  M: "50%"
+  D: "60"
 
 # List of command extensions (not key-value pairs, just values)
 command_extensions:
@@ -24,6 +24,7 @@ command_extensions:
   - "F"
   - "E"
   - "w"
+  - "r"
   - "C"
   - "e"
 

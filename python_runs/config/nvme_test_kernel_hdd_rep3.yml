@@ -1,14 +1,16 @@
 slurm_job_number: 
-block_size: "4M,64K,4K"
-directory: /mnt/cephtest-fi5k/test-rep3-hdd/skrit/fio 
-time: 120
+block_size: "4M,4K"
+directory: /mnt/cephtest-fi5k/test-rep3-hdd/skrit/fio
+time: 90
 io_type: write
-platform_type: nvme_rep3_kernel_hdd
+platform_type: hdd_rep3_kernel
 split_hosts_file: 0
-job_number: '48,16,8,4,2,1'
-node_count: 20,16,8,4,2,1
+job_number: '48,16,8,4,2'
+node_count: 24,16,8,4,2
 hosts_file:
 no_scrub: 0
 unit_restart: 1
-job_note: "This test is for rep3 hdd partition after we swap 6GB/s SAS cables with 12GB/s SAS cables"
+job_note: "Testing for comparison to Andras' data after system upgrade to Pacific. Plot Title: Fi5 Kernel Pacific triple rep HDD"
 template_path: /mnt/home/skrit/Documents/testing_clones/clone1/PyBenchFramework/examples/template/template.fio
+file_size: "40G"
+wait_for_others: 1

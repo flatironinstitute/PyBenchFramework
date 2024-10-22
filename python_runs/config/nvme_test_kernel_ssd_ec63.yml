@@ -1,14 +1,16 @@
 slurm_job_number: 
-block_size: "4M,64K,4K"
+block_size: "4M,4K"
 directory: /mnt/cephtest-fi5k/test-ec63-ssd/skrit/fio
-time: 120
+time: 90
 io_type: write
 platform_type: nvme_ec63_kernel
 split_hosts_file: 0
-job_number: '48,16,8,4,2,1'
-node_count: 20,16,8,4,2,1
+job_number: '16,8,4,2'
+node_count: 24,16,8,4,2
 hosts_file:
 no_scrub: 0
 unit_restart: 1
-job_note: "This test is for ec63 partition after we change the number of OSDs back from 1 OSD per SSD to 2 OSDs per SSD"
+job_note: "Testing for comparison to Andras' data after system upgrade to Pacific. Plot Title: Fi5 Kernel Pacific EC63 SSD"
 template_path: /mnt/home/skrit/Documents/testing_clones/clone1/PyBenchFramework/examples/template/template.fio
+file_size: "40G"
+wait_for_others: 1

@@ -165,7 +165,7 @@ def text_comparison (results_list, benchmark):
     #---------------------Instead of doing all those row operations for 'top10CoV', I can sort the dataframe then take the highest 10% based on coefficient_of_variation
     top10df = df[(df['top10CoV'] == 1) & (df['index'] == 0)]
     sorted_top10df = top10df.sort_values(by='coefficient_of_variation')
-    print(sorted_top10df)
+    print(sorted_top10df[['Node Count','Job (Rank) count', 'Performance (GB/s)', 'coefficient_of_variation']])
     sorted_df = df.sort_values(by='coefficient_of_variation')
     #print(sorted_df)
 

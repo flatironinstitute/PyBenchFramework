@@ -271,7 +271,7 @@ def plot_and_compare_mdtest(result_list, output_path):
                 mean_performance_list = []
 
                 node_count = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'node_count'].values[0])
-                if key_list[op_index] != "File read" and key_list[op_index] != "File removal" or node_count > 2:
+                if key_list[op_index] != "File read" and key_list[op_index] != "File stat" and key_list[op_index] != "Directory stat" and key_list[op_index] != "File removal" or node_count > 2:
                     ranks_per_node = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'ranks_per_node'].values[0])
                     files_per_rank = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'files_per_rank'].values[0])
                     mean_performance = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'Mean'].values[0])
