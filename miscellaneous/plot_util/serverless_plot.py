@@ -257,6 +257,12 @@ def plot_and_compare_mdtest(result_list, output_path):
             #"Tree removal"
             ]
     plot_counter = 0
+    
+    # Set the column titles
+    for col in range(num_plot_cols):
+        x_position = (col + 0.5) / num_plot_cols
+        fig.text(x_position,0.95, f'{result_list[col][0].iloc[0]["plot_title"]}', ha='center', va='bottom', fontsize=16)
+
     for op_index in range(len(key_list)):
 
         for idx,file_lists in enumerate(result_list):
@@ -265,12 +271,14 @@ def plot_and_compare_mdtest(result_list, output_path):
             all_dict = {}
 
             for dataframe in file_lists:
+                #print(dataframe)
                 tmp_list = []
                 node_list = []
                 ranks_per_node_list = []
                 mean_performance_list = []
 
                 node_count = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'node_count'].values[0])
+
                 if key_list[op_index] != "File read" and key_list[op_index] != "File stat" and key_list[op_index] != "Directory stat" and key_list[op_index] != "File removal" or node_count > 2:
                     ranks_per_node = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'ranks_per_node'].values[0])
                     files_per_rank = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'files_per_rank'].values[0])
@@ -314,10 +322,8 @@ def plot_and_compare_mdtest(result_list, output_path):
                 mean_perf = []
                 files_per_rank = [] 
             
-            #print(nodes_list, mean_perf_list, ranks_per_node_counts)
             for i in range(len(nodes_list)):
                 ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]} ranks')
-
 
             ax.xaxis.set_major_locator(MultipleLocator(2))
             ax.set_xlabel('nodes')
@@ -330,20 +336,12 @@ def plot_and_compare_mdtest(result_list, output_path):
                 #max_y = max(max(mean_perf_list[i]),max(mean_perf_list[i-1]))
                 #ax.set_ylim(0, max_y * 1.1)
 
-            #print (f"Plot columns is: {num_plot_cols}. Plot_counter is {plot_counter}, modulo is {plot_counter % num_plot_cols}")
-
             #ax.set_ylim(bottom=0)
             ax.legend(title='Ranks per node')
             plot_counter += 1
+    plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to make room for column titles
 
-    #filename.append()
-
-    #filename = f"{filename1}_{filename2}"
     final_filename = "_".join(filename)
-    #print(final_filename)
-    #final_filename = final_filename.replace(" ", "_")
-    #final_filename = final_filename.replace("\n", "")
-    #print(final_filename)
     final_filename = re.sub(r'[^A-Za-z0-9._-]+', '', 'test_mdtest_dir_plotting')
 
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
@@ -463,6 +461,18 @@ def read_mdtest_json_data(job_directory):
     file_pattern = f"{json_dir}/mdtest*dataframe.json"
     files = glob.glob(file_pattern)
 
+    job_note_file = f"{job_directory}/job_note.txt"
+    tmp_title = ''
+
+    with open (job_note_file, 'r') as file:
+        for line in file:
+            if "PLOT TITLE" in line.upper() or "plot title" in line.lower():
+                tmp_title = re.split(':', line)[1]
+                plot_title = f"{tmp_title}"
+            if tmp_title == '':
+                print(f"Plot title not found for directory: {job_directory}")
+                plot_title = "Title not found"
+
     one_job_result_list = []
 
     for i in files:
@@ -473,7 +483,8 @@ def read_mdtest_json_data(job_directory):
         df = pd.read_json(i,orient="records")
         #print(df)
         #sys.exit()
-        
+        df['plot_title'] = plot_title            
         one_job_result_list.append(df)
+
     #print(all_result_list)
     return one_job_result_list 
