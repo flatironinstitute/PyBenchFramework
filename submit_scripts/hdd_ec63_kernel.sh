@@ -3,7 +3,7 @@
 #SBATCH -e logs/ceph-fi5-kernel-hddec63-%j.err
 #SBATCH -p scc
 #SBATCH --nodes=24
-#SBATCH --comment "FI_JOB_RESOURCES=cephfs[cluster=cephtest-fi5,type=fuse],cephfs[cluster=cephtest-fi5,type=kernel]"
+#SBATCH --comment "FI_JOB_RESOURCES=cephfs[cluster=cephtest-fi5,type=kernel]"
 #SBATCH --exclusive
 #SBATCH -C genoa
 

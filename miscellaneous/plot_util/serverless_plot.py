@@ -397,6 +397,7 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
 
     #final_filename = "testing_fio_ior_compare"
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
+    plt.close()
     
 def convert_mdtest_data(job_directory):
     key_list = {"Directory creation",
