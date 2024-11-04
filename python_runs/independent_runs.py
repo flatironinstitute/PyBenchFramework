@@ -62,9 +62,13 @@ def serverless_fio(args, PyBench_root_dir):
     log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
     command_log_dir = f"{log_dir}/commands"
     
+    #create a map between hostnames and generic indexed hostnames
+    miscellaneous.create_hostname_mapping(log_dir)
+
     if 'job_note' in args.keys():
+        job_note = f"{args['job_note']} {args['io_type']}"
         with open(f"{log_dir}/job_note.txt", 'w') as file:
-            file.write(args['job_note'])
+            file.write(job_note)
 
     if args['file_size']:
         pass
@@ -89,7 +93,7 @@ def serverless_fio(args, PyBench_root_dir):
                     file_count = job_count
 
                     #Reset file contents for FIO config file
-                    file_contents = miscellaneous.reset_file_contents(original_file_contents, args, job_count, block_size)
+                    file_contents = miscellaneous.reset_file_contents(original_file_contents, args, job_count, block_size,log_dir)
 
                     with open(f"examples/test_files/{job_number}_{hostname}_{job_count}p_{file_count}f_{block_size}_{args['io_type']}.fio", 'w') as file:
                         file.write(file_contents)

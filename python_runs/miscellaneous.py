@@ -3,6 +3,7 @@ import re
 import time
 import mmap
 import pathlib
+import fcntl
 import yaml
 import json
 import socket
@@ -14,7 +15,92 @@ def ensure_log_directory_exists(directory, createdir):
         if createdir == 1:
             os.makedirs(directory)
 
-def reset_file_contents(original_file_contents, args, job_count, single_block_size):
+def create_hostname_mapping(log_dir):
+    hostname = f"{socket.gethostname()}"
+    #insert hostname into file
+    #find line that hostname was inserted into
+    #combine line index and generic name like so: hostxx, where xx stands for line index
+    log_path = f"{log_dir}/hostname_mapping.txt"
+
+    '''
+    with open (log_path, 'a') as file:
+        # Lock file for writing
+        fcntl.flock(file, fcntl.LOCK_EX)
+        file.write(f"{hostname}\n")
+        file.flush()
+        # Unlock file
+        fcntl.flock(file, fcntl.LOCK_UN)
+        file.close()
+    '''
+
+    with open(log_path, 'r+') as file:
+        fcntl.flock(file, fcntl.LOCK_EX)
+        hostname_found = False
+        lines = file.readlines()
+
+        for idx, line in enumerate(lines):
+            host_index = idx + 1
+            if hostname in line:
+                mapped_hostname = f"{hostname}:host{host_index}\n"
+                lines[idx] = mapped_hostname
+                hostname_found = True
+
+        if hostname_found:
+            pass
+        else:
+            #print (f"hostname {hostname} not found in hostname_mapping.txt file!")
+            #sys.exit()
+            line_index = len(lines)
+            host_index = line_index + 1
+            mapped_hostname = f"{hostname}:host{host_index}\n"
+            lines.append(mapped_hostname)
+
+        file.seek(0)
+        file.writelines(lines)
+        file.truncate()
+
+        file.flush()
+        fcntl.flock(file, fcntl.LOCK_UN)
+        file.close()
+    
+def get_hostname_mapping(hostname,log_dir):
+    log_path = f"{log_dir}/hostname_mapping.txt"
+    mapped_hostname = ''
+    Err = 1
+    hostname = socket.gethostname()
+
+    while Err >= 1 and Err <= 3:
+        with open (log_path, 'r') as file:
+            fcntl.flock(file, fcntl.LOCK_EX)
+            lines = file.readlines()
+            
+            for line in lines:
+                if hostname in line:
+                    try:
+                        mapped_hostname = re.split(':', line.strip())[1]
+                        Err = 0
+                    except IndexError as e:
+                        if Err == 3:
+                            print("Hostname mapping failed 3 times... Exiting.")
+                            fcntl.flock(file, fcntl.LOCK_UN)
+                            file.close()
+                            sys.exit()
+                        Err += 1
+
+                        fcntl.flock(file, fcntl.LOCK_UN)
+                        file.close()
+                        
+        if Err >= 1:
+            print("Retrying to create the hostname map for {hostname}")
+            create_hostname_mapping(log_dir)
+
+    return mapped_hostname
+
+def reset_file_contents(original_file_contents, args, job_count, single_block_size, log_dir):
+
+    #get mapping of hostname to generic index entry
+    hostname = socket.gethostname()
+    mapped_hostname = get_hostname_mapping(hostname,log_dir)
 
     # Reset file_contents to the original template for each iteration
     file_contents = original_file_contents
@@ -23,7 +109,7 @@ def reset_file_contents(original_file_contents, args, job_count, single_block_si
     file_contents = file_contents.replace("__dir_var__", args['directory'])
     file_contents = file_contents.replace("__io_type_var__", args['io_type'])
     file_contents = file_contents.replace("__time_var__",f"{args['time']}")
-    file_contents = file_contents.replace("__hostname__",f"{socket.gethostname()}")
+    file_contents = file_contents.replace("__hostname__",f"{mapped_hostname}")
     file_contents = file_contents.replace("__file_size__",f"{args['file_size']}")
 
     return file_contents

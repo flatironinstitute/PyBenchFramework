@@ -21,6 +21,13 @@ def prep_work(args, PyBench_root_dir):
     miscellaneous.ensure_log_directory_exists(test_files_log, 1)
     miscellaneous.ensure_log_directory_exists(tmp_log_dir, 1)
 
+    try:
+        with open(f"{log_dir}/hostname_mapping.txt", "x") as file:
+            #file.write("Hostname_mapping file was created because it did not exist.\n")
+            pass
+    except FileExistsError:
+        print("File already exists.")
+
 var_name = "PyBench_root_dir"
 
 try:
