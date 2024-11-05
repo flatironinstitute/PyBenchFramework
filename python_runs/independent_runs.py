@@ -125,17 +125,22 @@ def serverless_fio(args, PyBench_root_dir):
                     
                     json_log_file = f"{log_dir}/{hostname}_{node_iter}_{job_count}p_{file_count}f_{block_size}.json"
                     uncombined_json_log_file = f"{log_dir}/uncombined_{node_iter}_{job_count}p_{block_size}.tmp"
-                    if os.path.exists(json_log_file):
-                        bw, iops = miscellaneous.load_json_results(json_log_file)
+                    
+                    wait_res = 0
+                    while wait_res == 0:
+                        if os.path.exists(json_log_file):
+                            bw, iops = miscellaneous.load_json_results(json_log_file)
 
-                        with open(uncombined_json_log_file, 'a') as file:
-                            file.write(f"{hostname}, bw: {bw}, iops: {iops} \n")
+                            with open(uncombined_json_log_file, 'a') as file:
+                                fcntl.flock(file, fcntl.LOCK_EX)  # Lock the file for exclusive access
+                                file.write(f"{hostname}, bw: {bw}, iops: {iops} \n")
+                                fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file after writing
 
-                    if 'wait_for_others' in args.keys():
-                        if args['wait_for_others']:
-                            count_lines_in_uncombined.wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter, 1000)
-                        else:
-                            count_lines_in_uncombined.wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter, 100)
+                        if 'wait_for_others' in args.keys():
+                            if args['wait_for_others']:
+                                wait_res = count_lines_in_uncombined.wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter, 1000)
+                            else:
+                                wait_res = count_lines_in_uncombined.wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter, 100)
 
                     if 'unit_restart' in args:
                         if args['unit_restart'] == 1:

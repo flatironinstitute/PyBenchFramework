@@ -87,8 +87,8 @@ def get_hostname_mapping(hostname,log_dir):
                             sys.exit()
                         Err += 1
 
-                        fcntl.flock(file, fcntl.LOCK_UN)
-                        file.close()
+            fcntl.flock(file, fcntl.LOCK_UN)
+            file.close()
                         
         if Err >= 1:
             print("Retrying to create the hostname map for {hostname}")
@@ -210,7 +210,7 @@ def insert_entry_and_check_completion (filename, hostname, total_node_count):
         if how_long > 10:
             type_line_count = type(line_count)
             type_node_count = type(total_node_count)
-            print (f"waited too long. File line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
+            print (f"{hostname} waited too long. File line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
             break
 
 def grep_string(filename, search_string):

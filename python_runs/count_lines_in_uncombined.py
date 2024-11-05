@@ -43,7 +43,21 @@ def wait_until_line_count_is_node_count(file_path, hostname, node_count, total_i
         print(f"[{hostname}] Current line count is {line_count}. Waiting...")
 
         if line_count >= node_count:
-            break
+            return 1
+        else:
+            found = 0
+            with open (file_path, 'r') as file:
+                lines = file.readlines()
+
+
+                for i in lines:
+                    if hostname in i:
+                        found = 1
+                    else:
+                        pass
+
+            if found == 0:
+                return 0
 
         time.sleep(check_interval)
         wait_time += 1 
