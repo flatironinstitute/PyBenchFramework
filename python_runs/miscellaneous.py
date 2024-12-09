@@ -91,7 +91,7 @@ def get_hostname_mapping(hostname,log_dir):
             file.close()
                         
         if Err >= 1:
-            print("Retrying to create the hostname map for {hostname}")
+            print(f"Retrying to create the hostname map for {hostname}")
             create_hostname_mapping(log_dir)
 
     return mapped_hostname
