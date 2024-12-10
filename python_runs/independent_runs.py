@@ -29,15 +29,15 @@ def wait_until_line_count_is_node_count(file_path, hostname, node_count, check_i
     
     wait_time = 0
     while line_count != node_count:
-        print(f"Current line count is {line_count}. Waiting...")
+        print(f"{datetime.now().strftime('%b %d %H:%M:%S')} Current line count is {line_count}. Waiting...")
         time.sleep(check_interval)
         line_count = count_lines_in_file(file_path)
         wait_time += 1
         if wait_time >= 600:
-            print ("Waited too long for uncombined to have the correct number of lines. Jobs and nodes are out of sync by over 10 minutes")
+            print ("{datetime.now().strftime('%b %d %H:%M:%S')} Waited too long for uncombined to have the correct number of lines. Jobs and nodes are out of sync by over 10 minutes")
             sys.exit(1)
     
-    print(f"{hostname} uncombined file has reached {node_count} lines. Moving onto next job...")
+    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] uncombined file has reached {node_count} lines. Moving onto next job...")
 
 def serverless_fio(args, PyBench_root_dir):
     def background_network_monitor(args, job_count, node_count, block_size, PyBench_root_dir):
@@ -114,15 +114,15 @@ def serverless_fio(args, PyBench_root_dir):
                     background_thread = threading.Thread(target=background_network_monitor, args=(args, job_count, node_iter, block_size, PyBench_root_dir))
                     background_thread.start()
                     start_time = time.time()
-                    print("starting fio?")
+                    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] starting fio?")
                     fio_ob_dict[f"{hostname}_{node_iter}_{job_count}p_{file_count}f_{block_size}_{args['io_type']}"].run()
-                    print("stopping fio?")
+                    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] stopping fio?")
                     network_counter_collection.stop_thread = True
                     background_thread.join()
                     end_time = time.time()
 
                     elapsed_time = end_time - start_time
-                    print(f"Job num: {job_count}, node count: {node_iter}. Iteration is finished. {hostname} [s-{start_time}], [e-{end_time}, el-{elapsed_time}]")
+                    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Job num: {job_count}, node count: {node_iter}. Iteration is finished. {hostname} [s-{start_time}], [e-{end_time}, el-{elapsed_time}]")
                     
                     json_log_file = f"{log_dir}/{hostname}_{node_iter}_{job_count}p_{file_count}f_{block_size}.json"
                     uncombined_json_log_file = f"{log_dir}/uncombined_{node_iter}_{job_count}p_{block_size}.tmp"
@@ -187,6 +187,6 @@ def serverless_fio(args, PyBench_root_dir):
 
                     with open(combined_json_log_file, 'w') as json_file:
                         json.dump(data, json_file, indent=4)
-                        print(f"Data successfully written to {combined_json_log_file}")
+                        print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Data successfully written to {combined_json_log_file}")
                 
 

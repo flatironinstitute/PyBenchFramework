@@ -1,4 +1,5 @@
 import os,sys
+from datetime import datetime
 import re
 import time
 import mmap
@@ -81,7 +82,7 @@ def get_hostname_mapping(hostname,log_dir):
                         Err = 0
                     except IndexError as e:
                         if Err == 3:
-                            print("Hostname mapping failed 3 times... Exiting.")
+                            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Hostname mapping failed 3 times... Exiting.")
                             fcntl.flock(file, fcntl.LOCK_UN)
                             file.close()
                             sys.exit()
@@ -91,7 +92,7 @@ def get_hostname_mapping(hostname,log_dir):
             file.close()
                         
         if Err >= 1:
-            print(f"Retrying to create the hostname map for {hostname}")
+            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Retrying to create the hostname map")
             create_hostname_mapping(log_dir)
 
     return mapped_hostname
@@ -137,7 +138,7 @@ def load_ior_json_results(filename, log_dir):
         try:
             data = json.load(file)
         except json.JSONDecodeError:
-            print(f"IOR workflow: Error decoding JSON From file: {filename}")
+            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} IOR workflow: Error decoding JSON From file: {filename}")
     bw = {}
     iops = {}
     
@@ -158,12 +159,12 @@ def load_ior_json_results(filename, log_dir):
             iops[f"{label2}"] = data['tests'][0]['Results'][0][1]['iops'] 
 
     except KeyError as e:
-        print(f'''Issue with results for either:
+        print(f'''{datetime.now().strftime('%b %d %H:%M:%S')} Issue with results for either:
         bw = data['tests'][0]['Results'][0][0]['bwMiB']
         iops = data['tests'][0]['Results'][0][0]['iops']
         In JSON decode of file: {filename}''')
     except Exception as e:
-        print(f"An unexpected error occurred: {e}. IOR, filename: {filename}")
+        print(f"{datetime.now().strftime('%b %d %H:%M:%S')} An unexpected error occurred: {e}. IOR, filename: {filename}")
     
     
     return bw, iops
@@ -175,7 +176,7 @@ def load_json_results(filename):
             try:
                 data = json.load(file)
             except json.JSONDecodeError:
-                print(f"Error decoding JSON from file: {filename}")
+                print(f"{datetime.now().strftime('%b %d %H:%M:%S')} Error decoding JSON from file: {filename}")
 
     jobname = data['jobs'][0]['jobname']
     if jobname == "randread":
@@ -210,7 +211,7 @@ def insert_entry_and_check_completion (filename, hostname, total_node_count):
         if how_long > 10:
             type_line_count = type(line_count)
             type_node_count = type(total_node_count)
-            print (f"{hostname} waited too long. File line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
+            print (f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] waited too long. File line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
             break
 
 def grep_string(filename, search_string):
@@ -252,8 +253,8 @@ def restart_ceph_unit(path):
             result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             #output, error = process.communicate(sudo_password + '\n')
             
-            print(f"{hostname} Ceph is active? Output: ", result.stdout)
-            print(f"{hostname} Ceph is active? Errors: ", result.stderr)
+            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Ceph is active? Output: ", result.stdout)
+            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Ceph is active? Errors: ", result.stderr)
 
             is_active = result.stdout.strip()
             
@@ -263,7 +264,7 @@ def restart_ceph_unit(path):
             else:
                 return 0
         except subprocess.CalledProcessError as e:
-            print(f"Failed to get active status for {unit_filename}: {e.stderr}")
+            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} Failed to get active status for {unit_filename}: {e.stderr}")
             sys.exit(1)
     
     hostname = socket.gethostname()
@@ -321,8 +322,8 @@ def restart_ceph_unit(path):
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     #output, error = process.communicate(sudo_password + '\n')
     
-    print(f"{hostname} Ceph restart? Output: ", result.stdout)
-    print(f"{hostname} Ceph restart? Errors: ", result.stderr)
+    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Ceph restart? Output: ", result.stdout)
+    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Ceph restart? Errors: ", result.stderr)
     
     active_status = 0
     active_counter = 0
@@ -334,7 +335,7 @@ def restart_ceph_unit(path):
         active_counter += 1
 
         if active_counter == 10:
-            print(f"{hostname} systemd unit for {path} is not becoming active")
+            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] systemd unit for {path} is not becoming active")
             sys.exit(1)
 
 def get_config_params(config_file):
