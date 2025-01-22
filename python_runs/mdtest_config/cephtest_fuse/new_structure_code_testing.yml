@@ -1,0 +1,19 @@
+general_opts:
+  mpi_ranks: 16,8,4,2,1
+  node_count: 24,16,8,4,2,1
+
+mdtest_opts:
+  directory: /mnt/cephtest-fi5/test-rep3-ssd/skrit/snapshot_testing/programatic_testing/mdtest_with_snapshots2
+  files_per_rank: 100000
+  write_output: 1
+  i: 1
+  N: 1
+  command_extensions: Yur,YuT,YuC
+
+not_taken_into_account:
+  timed: 90, 180
+  io_type: metadata
+  platform_type: cephtest-fi5-fuse
+  unit_restart: 1
+  job_note: "Testing fuse fi5 cluster metadata operations with snapshots. Plot title: fuse without snapshots"
+  in_parts: 1

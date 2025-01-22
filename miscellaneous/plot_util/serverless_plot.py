@@ -218,8 +218,12 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
     return nodes_list, bw_list, iops_list, processor_counts, plot_title
 
 def plot_and_compare_mdtest(result_list, output_path):
+    #print(result_list)
+    #print(output_path)
+    #sys.exit()
     #num_plots = len(result_list)
-    num_plots = len(result_list) * 7 
+    #print(result_list)
+    num_plots = len(result_list) * 6#7 
     num_plot_cols = len(result_list)
     print(num_plots)
     print(len(result_list))
@@ -233,8 +237,8 @@ def plot_and_compare_mdtest(result_list, output_path):
         else:
             num_plot_rows = int(num_plots // num_plot_cols + 1)
     
-    #fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(5 * num_plot_cols, 5 * num_plot_rows), sharey=True)
-    fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(6 * num_plot_cols, 6 * num_plot_rows))
+    fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(5 * num_plot_cols, 5 * num_plot_rows))
+    #fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(6 * num_plot_cols, 6 * num_plot_rows))
     
     #if num_plots ==1:
     #    axs = [axs]
@@ -251,7 +255,7 @@ def plot_and_compare_mdtest(result_list, output_path):
             "Directory removal",
             "File creation",
             "File stat",
-            "File read",
+            #"File read",
             "File removal"
             #"Tree creation",
             #"Tree removal"
@@ -399,6 +403,75 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     plt.close()
     
+def convert_mdtest_data_in_parts(job_directory):
+    key_list = {"Directory creation",
+            "Directory stat",
+            "Directory removal",
+            "File creation",
+            "File stat",
+            "File read",
+            "File removal",
+            "Tree creation",
+            "Tree removal",
+            "Operation"
+            }
+    values = ["Operation",
+            "Max",
+            "Min",
+            "Mean",
+            "Std Dev"
+            ]
+    
+    if not os.path.exists(f"{job_directory}/json_output"):
+        os.makedirs(f"{job_directory}/json_output")
+
+    file_pattern = f"{job_directory}/mdtest*YuC*ranks*"
+    files = glob.glob(file_pattern)
+
+    for i in files:
+        file_name_dict = {}
+        file_name_dict["create"] = re.split('/',i)[len(re.split('/',i)) - 1]
+        file_name_dict["stat"] = file_name_dict["create"].replace("YuC", "YuT")
+        file_name_dict["remove"] = file_name_dict["create"].replace("YuC", "Yur")
+        #print(file_name_dict)
+        #sys.exit()
+        tmp_list = []
+        dynamic_key_list = []
+        for key, value in file_name_dict.items():
+            #only_filename = re.split('/',i)[len(re.split('/',i)) - 1]
+            only_filename = value
+            path_without_filename = os.path.join(*re.split('/', i)[:-1])
+            full_path = path_without_filename + "/" + only_filename
+            filename_list = re.split('_',only_filename)
+            num_ranks = filename_list[5]
+            num_nodes = filename_list[3]
+            files_per_rank = filename_list[7]
+
+            #tmp_dict = {}
+            with open (full_path, 'r') as file:
+                for line in file:
+                    tmp = line.strip().replace(':','')
+                    line_list = re.split(r'[ \t]{2,}',tmp)
+                    
+                    if line_list[0] in key_list:
+                        if line_list[0] == "Operation":
+                            dynamic_key_list = line_list
+                        else:
+                            tmp_dict = {}
+                            tmp_dict['operation'] = line_list[0]
+                            tmp_dict['ranks_per_node'] = num_ranks
+                            tmp_dict['node_count'] = num_nodes
+                            tmp_dict['files_per_rank'] = files_per_rank
+                            for el_index in range(len(line_list)): 
+                                tmp_dict[dynamic_key_list[el_index]] = line_list[el_index]
+                            if float(tmp_dict['Mean']) != 0:
+                                tmp_list.append(tmp_dict)
+
+        #print(tmp_list)
+        df = pd.DataFrame(tmp_list)
+        output_filename = file_name_dict["remove"].replace("Yur_","")
+        json_data = df.to_json(f"{job_directory}/json_output/{output_filename}_dataframe.json", orient="records")
+
 def convert_mdtest_data(job_directory):
     key_list = {"Directory creation",
             "Directory stat",

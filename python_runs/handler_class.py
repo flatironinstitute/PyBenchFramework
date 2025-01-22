@@ -380,7 +380,7 @@ class mdtestTool(BenchmarkTool):
         else:
             raise ValueError("Output file must be specified")
         
-        not_iteratable = ['mpi_ranks', 'directory', 'files_per_rank', 'node_count', 'timed', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file', 'write_output']
+        not_iteratable = ['mpi_ranks', 'directory', 'files_per_rank', 'node_count', 'timed', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file', 'write_output', 'in_parts']
 
         for param, value in config_params.items():
             if param not in not_iteratable:

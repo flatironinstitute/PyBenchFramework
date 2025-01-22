@@ -1,4 +1,4 @@
-from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data, convert_mdtest_data, read_mdtest_json_data,plot_and_compare_mdtest
+from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data, convert_mdtest_data, read_mdtest_json_data,plot_and_compare_mdtest, convert_mdtest_data_in_parts
 from plot_util.text_based_comparison import *
 import sys
 import re
@@ -97,12 +97,11 @@ def full_paths(all_job_list, benchmark, block_size):
                     print(f"Issue with returning FIO data from path provided '{all_job_list[0][i]}'") 
                     sys.exit()
         if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest":
-            #print(all_job_list)
             convert_mdtest_data(all_job_list[0])
             first_result_list.append(read_mdtest_json_data(all_job_list[0]))
-            #print(f"These are the jobs read from the input file: {all_job_list}")
-            #print( "MDTEST workflow --------" )
-            #sys.exit()
+        elif benchmark.upper() == "MDTESTINPARTS" or benchmark.lower() == "mdtestinparts":
+            convert_mdtest_data_in_parts(all_job_list[0])
+            first_result_list.append(read_mdtest_json_data(all_job_list[0]))
         return first_result_list
 
     for list_instance in all_job_list:
@@ -118,6 +117,9 @@ def full_paths(all_job_list, benchmark, block_size):
             convert_mdtest_data(list_instance)
             all_result_list.append(read_mdtest_json_data(list_instance))
             #sys.exit()
+        if benchmark.upper() == "MDTESTINPARTS" or benchmark.lower() == "mdtestinparts":
+            convert_mdtest_data_in_parts(list_instance)
+            all_result_list.append(read_mdtest_json_data(list_instance))
     return all_result_list
 
 def extract_paths_from_file(filepath, one_path):
@@ -204,7 +206,7 @@ if __name__ == "__main__":
     if not args['one_path']:
         all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
         for i in all_result_list:
-            if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest":
+            if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest" or benchmark.upper() == "MDTESTINPARTS" or benchmark.lower() == "mdtestinparts":
                 #print("IN MDTEST WORKFLOW")
                 plot_and_compare_mdtest(i, output_path)
             else:
