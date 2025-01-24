@@ -12,6 +12,7 @@ import time
 import re
 import shutil
 import subprocess
+from datetime import datetime
 
 def test_wrap_mdtest(args, PyBench_root_dir):
 
@@ -45,7 +46,7 @@ def test_wrap_mdtest(args, PyBench_root_dir):
     if args['not_taken_into_account']['timed']:
         times = sorted(benchmark_tools.split_arg_sequence(args['not_taken_into_account']['timed'], "--timed"))
         if len(times) != 2:
-            print ( f"When using the 'timed' option, please ensure to specify two comma-delimited integer values indicating a lower threshold and upper threshold of time in seconds that the test should run for. Values as interpreted are: {times}" )
+            print ( f"{datetime.now().strftime('%b %d %H:%M:%S')} When using the 'timed' option, please ensure to specify two comma-delimited integer values indicating a lower threshold and upper threshold of time in seconds that the test should run for. Values as interpreted are: {times}" )
             sys.exit()
         lower_time_threshold = times[0]
         upper_time_threshold = times[1]
@@ -56,7 +57,7 @@ def test_wrap_mdtest(args, PyBench_root_dir):
         with open(f"{log_dir}/job_note.txt", 'w') as file:
             file.write(job_note)
     else:
-        print("Job note required for job tracking. Please include an argument under the \"not_taken_into_account\" YAML dict")
+        print("{datetime.now().strftime('%b %d %H:%M:%S')} Job note required for job tracking. Please include an argument under the \"not_taken_into_account\" YAML dict")
         sys.exit()
     
     #If the "--in-parts" argument is used, we will break out into a separate a logical branch. This new branch may become the main branch and the old logic may take the place of the current logic. Whatever parts of the old code that can be recycled, should be?
@@ -115,7 +116,7 @@ def test_wrap_mdtest(args, PyBench_root_dir):
 
                                 out_file = f"{log_dir}/mdtest_output_{command_extent_element}_{tmp_node}_nodes_{ranks_per_node}_ranks_{files_per_rank}_files_per_rank"
                                 #Print statistics
-                                print (f"ranks per node are {ranks_per_node}, nodes are {tmp_node}, and mdtest job type is {command_extent_element}")
+                                print (f"{datetime.now().strftime('%b %d %H:%M:%S')} ranks per node are {ranks_per_node}, nodes are {tmp_node}, and mdtest job type is {command_extent_element}")
                                 #---------
                                 
                                 #Create mdtest object
@@ -139,16 +140,16 @@ def test_wrap_mdtest(args, PyBench_root_dir):
                                 if command_extent_element == "YuC":
                                     if not os.path.exists(f"{directory}/.snap/test_snapshots"):
                                         result = subprocess.run(f"mkdir {directory}/.snap/test_snapshots", shell=True, capture_output=False, text=True, check=True)
-                                        print("Creating snapshot after running creation mdtest...")
+                                        print("{datetime.now().strftime('%b %d %H:%M:%S')} Creating snapshot after running creation mdtest...")
                                     else:
-                                        print("snapshot already exists, something went wrong")
+                                        print("{datetime.now().strftime('%b %d %H:%M:%S')} snapshot already exists, something went wrong")
 
                                 if command_extent_element == "Yur":
                                     if os.path.exists(f"{directory}/.snap/test_snapshots"):
-                                        print("Deleting snapshot after running deletion mdtest...")
+                                        print("{datetime.now().strftime('%b %d %H:%M:%S')} Deleting snapshot after running deletion mdtest...")
                                         result = subprocess.run(f"rmdir {directory}/.snap/test_snapshots", shell=True, capture_output=False, text=True, check=True)
                                     else:
-                                        print("snapshot doesn't exist, something went wrong.")
+                                        print("{datetime.now().strftime('%b %d %H:%M:%S')} snapshot doesn't exist, something went wrong.")
                                 '''
                                 #--------
 
