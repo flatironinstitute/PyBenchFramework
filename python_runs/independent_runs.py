@@ -16,29 +16,6 @@ import time
 import mmap
 import count_lines_in_uncombined
 
-def count_lines_in_file(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
-            return len(lines)
-    except FileNotFoundError:
-        return 0
-
-def wait_until_line_count_is_node_count(file_path, hostname, node_count, check_interval=1):
-    line_count = count_lines_in_file(file_path)
-    
-    wait_time = 0
-    while line_count != node_count:
-        print(f"{datetime.now().strftime('%b %d %H:%M:%S')} Current line count is {line_count}. Waiting...")
-        time.sleep(check_interval)
-        line_count = count_lines_in_file(file_path)
-        wait_time += 1
-        if wait_time >= 600:
-            print ("{datetime.now().strftime('%b %d %H:%M:%S')} Waited too long for uncombined to have the correct number of lines. Jobs and nodes are out of sync by over 10 minutes")
-            sys.exit(1)
-    
-    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] uncombined file has reached {node_count} lines. Moving onto next job...")
-
 def serverless_fio(args, PyBench_root_dir):
     def background_network_monitor(args, job_count, node_count, block_size, PyBench_root_dir):
             print("network_monitoring")

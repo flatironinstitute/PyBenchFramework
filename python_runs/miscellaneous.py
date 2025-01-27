@@ -188,6 +188,14 @@ def load_json_results(filename):
 
     return bw, iops
 
+def count_lines_in_file(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+            return len(lines)
+    except FileNotFoundError:
+        return 0
+
 def count_lines(filename):
     with open(filename, 'r') as file:
         with mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as m:
@@ -195,8 +203,14 @@ def count_lines(filename):
 
 def insert_entry_and_check_completion (filename, hostname, total_node_count):
 
-    with open(filename, 'a') as file:
-        file.write(f"{hostname} \n")
+    hostname_exists_in_file = 0
+
+    with open(filename, 'a+') as file:
+        for line in file:
+            if line.strip() == hostname:
+                hostname_exists_in_file=1
+        if hostname_exists_in_file == 0:
+            file.write(f"{hostname} \n")
     
     start_waiting = time.time()
 
@@ -211,7 +225,7 @@ def insert_entry_and_check_completion (filename, hostname, total_node_count):
         if how_long > 10:
             type_line_count = type(line_count)
             type_node_count = type(total_node_count)
-            print (f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] waited too long. File line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
+            print (f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] waited too long. File ({filename}) line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
             break
 
 def grep_string(filename, search_string):

@@ -13,8 +13,7 @@ def count_lines_in_file_direct(file_path):
         block_size = get_block_size(file_path)
         
         # Open the file with O_DIRECT flag
-        fd = os.open(file_path, os.O_RDONLY | os.O_DIRECT)
-        
+        fd = os.open(file_path, os.O_RDONLY | os.O_DIRECT) 
         # Pre-allocate a bytearray with the block size
         buffer = bytearray(block_size)
         
@@ -41,24 +40,30 @@ def wait_until_line_count_is_node_count(file_path, hostname, node_count, total_i
     wait_time = 0
     while True:
         line_count = count_lines_in_file_direct(file_path)
-        print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Current line count is {line_count}. Waiting...")
+        print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Current line count is {line_count}. Filename ({file_path}) Waiting...")
 
-        if line_count >= node_count:
-            return 1
-        else:
+        if line_count > node_count:
+            print (f"Line count in intermediate results file is higher than the node count, possible duplicate reporting. This could be a result of using the same output directory more than once... File ({file_path})")
+            sys.exit()
+        if int(line_count) <= int(node_count):
+            #print(f"Line count is {line_count} and type is {type(line_count)}, node count is {node_count} and type is {type(node_count)}")
             found = 0
             with open (file_path, 'r') as file:
                 lines = file.readlines()
 
-
                 for i in lines:
                     if hostname in i:
-                        found = 1
+                        found += 1
                     else:
                         pass
 
             if found == 0:
                 return 0
+            if found > 1:
+                print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] hostname found more than once in file!")
+                sys.exit()
+            if found == 1 and line_count == node_count:
+                return 1
 
         time.sleep(check_interval)
         wait_time += 1 
