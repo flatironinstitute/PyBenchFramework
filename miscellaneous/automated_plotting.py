@@ -194,20 +194,14 @@ if __name__ == "__main__":
     if 'comparison' in args.keys():
         if args['comparison'] == 'text':
             all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
-            #text_comparison(all_result_list)
-            #print(f"Length of result list: {len(all_result_list)}")
             for i in all_result_list:
-                #print(f"Length of row: {len(i)}")
-                #print("-----------------------------------------------------------")
                 text_comparison(i, benchmark)
-                #sys.exit()
 
             sys.exit()
     if not args['one_path']:
         all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
         for i in all_result_list:
             if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest" or benchmark.upper() == "MDTESTINPARTS" or benchmark.lower() == "mdtestinparts":
-                #print("IN MDTEST WORKFLOW")
                 plot_and_compare_mdtest(i, output_path)
             else:
                 plot_and_compare(i, output_path, all_result_list)

@@ -3,14 +3,11 @@ import sys, os
 import json
 import matplotlib.pyplot as plt
 import pandas as pd
+import math, statistics
 from matplotlib.ticker import MultipleLocator
 import re
 from plot_util.text_based_comparison import text_comparison, dataframe_to_table
-
-#from collections import defaultdict, OrderedDict
-
-# Directory containing the JSON files
-#directory = "../results/write/EC63/3577299/"
+import numpy as np
 
 def plot_serverless_FIO(directory, title, block_size, optional_plot_block_size=None):
     
@@ -134,16 +131,26 @@ def return_FIO_data(directory, title, block_size, optional_plot_block_size=None)
                 processors = content["processors"]
                 if "bw" in content:
                     bw = content["bw"]/1e6
+                    for key, value in content['node_list'].items():
+                        tmp_item_bw = value['node_bw']/1e6
+                        value['node_bw'] = tmp_item_bw
+
                 elif content["mbw"]:
                     bw = content["mbw"]/1e3
+                    for key, value in content['node_list'].items():
+                        tmp_item_bw = value['node_bw']/1e3
+                        value['node_bw'] = tmp_item_bw
+
                 iops = content["iops"]
                 tmplist.append(int_nodes)
                 tmplist.append(processors)
                 tmplist.append(bw)
                 tmplist.append(iops)
+                tmplist.append(content['node_list'])
                 # Ensure the key exists in the dictionary
                 if processors not in data:
                     data[processors] = []
+                #print(tmplist)
                 data[processors].append(tmplist)
         except FileNotFoundError:
             print(f"The file {file_el} was not found.")
@@ -152,40 +159,37 @@ def return_FIO_data(directory, title, block_size, optional_plot_block_size=None)
     for key in sorted_data:
         sorted_data[key] = sorted(sorted_data[key], key=lambda x: x[0])
 
-
     #from collections import OrderedDict
     nodes = []
+    node_count = []
     bws = []
     iops = []
     processors = []
 
-    nodes_list = []
+    node_count_list = []
     bw_list = []
     iops_list = []
     processor_counts = []
-
+    node_list = []
     for key in sorted_data:
     
         for value in sorted_data[key]:
-            nodes.append(value[0])
-            '''
-            if optional_plot_block_size is None:
-                bws.append(value[2]/1e6)
-            elif optional_plot_block_size == "1M":
-                bws.append(value[2]/1e3)
-            '''
+            node_count.append(value[0])
             bws.append(value[2])
             iops.append(value[3])
+            nodes.append(value[4])
         
-        nodes_list.append(nodes)
+        node_count_list.append(node_count)
         bw_list.append(bws)
         iops_list.append(iops)
         processor_counts.append(key)
+        node_list.append(nodes)
     
-        nodes = []
+        node_count = []
         bws = []
         iops = []
-    return nodes_list, bw_list, iops_list, processor_counts
+        nodes = []
+    return node_count_list, bw_list, iops_list, processor_counts, node_list
 
 def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_block_size=None):
     plot_title = []
@@ -195,11 +199,10 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
     #print(benchmark)
     if benchmark.upper() == "IOR" or benchmark.lower() == "ior":
         identifier = re.split('/', directory)[3]
-        nodes_list, bw_list, iops_list, processor_counts = return_FIO_data(directory, title, block_size, "1M")
+        node_count_list, bw_list, iops_list, processor_counts, node_list = return_FIO_data(directory, title, block_size, "1M")
     else:
-        nodes_list, bw_list, iops_list, processor_counts = return_FIO_data(directory, title, block_size)
+        node_count_list, bw_list, iops_list, processor_counts, node_list = return_FIO_data(directory, title, block_size)
 
-    
     try:
         with open (f"{directory}/job_note.txt", 'r') as file:
             for line in file:
@@ -213,9 +216,7 @@ def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_b
         print(f"File {directory}/job_note.txt not found.")
         plot_title.append("Title not found")
     
-
-    #print (nodes_list, bw_list, iops_list, processor_counts, plot_title)
-    return nodes_list, bw_list, iops_list, processor_counts, plot_title
+    return node_count_list, bw_list, iops_list, processor_counts, plot_title, node_list 
 
 def plot_and_compare_mdtest(result_list, output_path):
     #print(result_list)
@@ -225,8 +226,8 @@ def plot_and_compare_mdtest(result_list, output_path):
     #print(result_list)
     num_plots = len(result_list) * 6#7 
     num_plot_cols = len(result_list)
-    print(num_plots)
-    print(len(result_list))
+    #print(num_plots)
+    #print(len(result_list))
     #print(result_list['title'])
     
     num_plot_rows = 1
@@ -371,38 +372,63 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
 
     for idx, lists in enumerate(all_result_list):
 
-        node_list, bw_list, iop_list, proc_list, plot_title = lists
+        node_count_list, bw_list, iop_list, proc_list, plot_title, node_list = lists
         
+        def find_stdev_from_nodelist(node_dict):
+            value_list = []
+            for key, value in node_dict.items():
+                value_list.append(value['node_bw'])
+
+            node_perf_stdev = statistics.stdev(value_list)
+            error_metric = node_perf_stdev * math.sqrt(len(value_list))
+            return error_metric
+
+        #print(node_list)
+
         # Calculate the row and column indices for the current subplot
         #if num_rows != 1:
         ax = axs[idx]
 
-        for i in range(len(node_list)):
-            ax.plot(node_list[i], bw_list[i], '-o', label=f'{proc_list[i]}_jobs')
+        for i in range(len(node_count_list)):
+            errorlist = np.zeros((2, len(node_count_list[i])))  # Shape (2, N)
 
+            for j in range(len(node_count_list[i])):
+                
+                # Store errors in errorlist (2, N)
+                error = find_stdev_from_nodelist(node_list[i][j])
+                errorlist[0, j] = error  # Lower error (row index 0)
+                errorlist[1, j] = error  # Upper error (row index 1)
+            
+            # Plot with error bars
+            ax.errorbar(node_count_list[i], bw_list[i], yerr=errorlist, fmt='o-', capsize=5, label=f'{proc_list[i]}_jobs')
+            '''
+            # Plot with error bars
+            ax.errorbar([node_count_list[i]], [bw_list[i]], yerr=errorlist, fmt='o-', capsize=5, label=f'{proc_list[i]}_jobs')
+            #ax.plot(node_count_list[i], bw_list[i], '-o', label=f'{proc_list[i]}_jobs')
+            '''
         plot_title[0] = plot_title[0].replace("\n", "")
         ax.xaxis.set_major_locator(MultipleLocator(2))
         ax.set_xlabel('nodes')
         ax.set_ylabel('GB/s')
         ax.set_title(plot_title[0])
         ax.legend(title='Type of run')
-
+        
         filename.append(re.split('-',plot_title[0].strip(" "))[0])
-
+        
     final_filename = "_".join(filename)
     final_filename = final_filename.replace(" ", "_")
     final_filename = final_filename.replace("\n", "")
     final_filename = re.sub(r'[^A-Za-z0-9._-]+', '', final_filename)
     print(final_filename)
     #return text from text comparison methods. Return outliers (highest differences between datapoints) in a table? And add some commentary...
-
+    
     # Add some global text (outside the plot area)
     #fig.text(0.5, 0.1, 'This is some text below the plot', ha='center', fontsize=12)
-
+    
     #final_filename = "testing_fio_ior_compare"
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     plt.close()
-    
+
 def convert_mdtest_data_in_parts(job_directory):
     key_list = {"Directory creation",
             "Directory stat",
