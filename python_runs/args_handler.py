@@ -86,7 +86,7 @@ def handle_arguments():
     required_args = [ 'io_type', 'platform_type', 'benchmark']
     missing_args = [arg for arg in required_args if arg not in merged_dict or merged_dict[arg] is None]
 
-    print (f"{merged_dict['write_data']} {merged_dict['write_data']}") 
+    #print (f"{merged_dict['write_data']} {merged_dict['write_data']}") 
     if missing_args and not merged_dict["not_taken_into_account"]["in_parts"]:
         print(f"Error: Missing required arguments: {', '.join(missing_args)}")
         sys.exit(1)

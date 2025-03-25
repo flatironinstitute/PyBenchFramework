@@ -19,6 +19,7 @@ class BenchmarkTool(ABC):
         self.output_format = "json"
         self.params = {}
         self.ceph_util = []
+        self.elapsed_time = 0
         
     @abstractmethod
     def setup_command(self, **params):
@@ -90,15 +91,17 @@ class BenchmarkTool(ABC):
     def run(self):
 
         try:
-
+            env = os.environ.copy()
             # Open the output file for appending
             if 'write_output' in self.params and self.params['write_output'] == 1:
+                
                 with open(self.params['output_file'], 'a') as output_file:
                     # Start the subprocess with stdout as PIPE to capture output
                     start_time = time.time()
 
+                    #print (f"This is self.command: {self.command} .. handler_class:101")
                     # Run the command and capture output in real-time
-                    process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                    process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
 
                     # Read and print the output in real-time
                     for line in process.stdout:
@@ -114,11 +117,13 @@ class BenchmarkTool(ABC):
                     end_time = time.time()
                     elapsed_time = end_time - start_time
 
+                    self.elapsed_time = elapsed_time
                     print(datetime.now().time(), f"Time to complete: {elapsed_time}")
+                
             else:
                 # Start the subprocess and wait for it to finish
                 start_time = time.time()
-                result = subprocess.run(self.command, capture_output=False, text=True, check=True)
+                result = subprocess.run(self.command, capture_output=False, text=True, check=True, env=env)
                 end_time = time.time()
                 elapsed_time = end_time - start_time
 
@@ -374,11 +379,6 @@ class mdtestTool(BenchmarkTool):
         else:
             raise ValueError("Directory must be specified. (--directory)")
 
-        if output_file:
-            pass
-            #self.command.extend([">>", str(output_file)])
-        else:
-            raise ValueError("Output file must be specified")
         
         not_iteratable = ['mpi_ranks', 'directory', 'files_per_rank', 'node_count', 'timed', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file', 'write_output', 'in_parts']
 
@@ -391,6 +391,12 @@ class mdtestTool(BenchmarkTool):
             if param == 'command_extensions':
                 for i in value:
                     self.command.extend([f"-{i}"])
+
+        if output_file:
+            pass
+            #self.command.extend([">>", str(output_file)])
+        else:
+            raise ValueError("Output file must be specified")
 
     def parse_output(self, output):
         return "mdtest no parsing yet."

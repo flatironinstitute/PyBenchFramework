@@ -16,12 +16,12 @@ def ensure_log_directory_exists(directory, createdir):
         if createdir == 1:
             os.makedirs(directory)
 
-def create_hostname_mapping(log_dir):
+def create_hostname_mapping(log_dir, node_count):
     hostname = f"{socket.gethostname()}"
     #insert hostname into file
     #find line that hostname was inserted into
     #combine line index and generic name like so: hostxx, where xx stands for line index
-    log_path = f"{log_dir}/hostname_mapping.txt"
+    log_path = f"{log_dir}/{hostname}-hostname_mapping.txt"
 
     '''
     with open (log_path, 'a') as file:
@@ -34,11 +34,13 @@ def create_hostname_mapping(log_dir):
         file.close()
     '''
 
-    with open(log_path, 'r+') as file:
-        fcntl.flock(file, fcntl.LOCK_EX)
-        hostname_found = False
-        lines = file.readlines()
-
+    with open(log_path, 'w') as file:
+        #fcntl.flock(file, fcntl.LOCK_EX)
+        #hostname_found = False
+        #lines = file.readlines()
+        mapped_hostname=f"{hostname}:host{node_count}"
+        file.write(mapped_hostname)
+        '''
         for idx, line in enumerate(lines):
             host_index = idx + 1
             if hostname in line:
@@ -55,49 +57,53 @@ def create_hostname_mapping(log_dir):
             host_index = line_index + 1
             mapped_hostname = f"{hostname}:host{host_index}\n"
             lines.append(mapped_hostname)
-
-        file.seek(0)
-        file.writelines(lines)
-        file.truncate()
+        '''
+        #file.seek(0)
+        #file.writelines(lines)
+        #file.truncate()
 
         file.flush()
-        fcntl.flock(file, fcntl.LOCK_UN)
+        #fcntl.flock(file, fcntl.LOCK_UN)
         file.close()
     
 def get_hostname_mapping(hostname,log_dir):
-    log_path = f"{log_dir}/hostname_mapping.txt"
+    log_path = f"{log_dir}/{hostname}-hostname_mapping.txt"
     mapped_hostname = ''
     Err = 1
     hostname = socket.gethostname()
+    hostname_mapped = ''
 
-    while Err >= 1 and Err <= 3:
-        with open (log_path, 'r') as file:
-            fcntl.flock(file, fcntl.LOCK_EX)
-            lines = file.readlines()
-            
-            for line in lines:
-                if hostname in line:
-                    try:
-                        mapped_hostname = re.split(':', line.strip())[1]
-                        Err = 0
-                    except IndexError as e:
-                        if Err == 3:
-                            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Hostname mapping failed 3 times... Exiting.")
-                            fcntl.flock(file, fcntl.LOCK_UN)
-                            file.close()
-                            sys.exit()
-                        Err += 1
+    #while Err >= 1 and Err <= 3:
+    with open (log_path, 'r') as file:
+        hostname_mapped = file.read()
+        mapped_hostname = re.split(':', hostname_mapped.strip())[1]
+            #fcntl.flock(file, fcntl.LOCK_EX)
+        '''
+        lines = file.readlines()
+        
+        for line in lines:
+            if hostname in line:
+                try:
+                    mapped_hostname = re.split(':', line.strip())[1]
+                    Err = 0
+                except IndexError as e:
+                    if Err == 3:
+                        print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Hostname mapping failed 3 times... Exiting.")
+                        fcntl.flock(file, fcntl.LOCK_UN)
+                        file.close()
+                        sys.exit()
+                    Err += 1
 
-            fcntl.flock(file, fcntl.LOCK_UN)
-            file.close()
-                        
-        if Err >= 1:
-            print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Retrying to create the hostname map")
-            create_hostname_mapping(log_dir)
-
+        fcntl.flock(file, fcntl.LOCK_UN)
+        file.close()
+             
+    if Err >= 1:
+        print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Retrying to create the hostname map")
+        create_hostname_mapping(log_dir)
+        '''
     return mapped_hostname
 
-def reset_file_contents(original_file_contents, args, job_count, single_block_size, log_dir):
+def reset_file_contents(original_file_contents, args, job_count, single_block_size, log_dir, local_rank):
 
     #get mapping of hostname to generic index entry
     hostname = socket.gethostname()
@@ -110,7 +116,7 @@ def reset_file_contents(original_file_contents, args, job_count, single_block_si
     file_contents = file_contents.replace("__dir_var__", args['directory'])
     file_contents = file_contents.replace("__io_type_var__", args['io_type'])
     file_contents = file_contents.replace("__time_var__",f"{args['time']}")
-    file_contents = file_contents.replace("__hostname__",f"{mapped_hostname}")
+    file_contents = file_contents.replace("__hostname__",f"{mapped_hostname}.{local_rank}")
     file_contents = file_contents.replace("__file_size__",f"{args['file_size']}")
 
     return file_contents
@@ -171,12 +177,13 @@ def load_ior_json_results(filename, log_dir):
 
 def load_json_results(filename):
     data = {}
+    hostname = socket.gethostname()
     if filename.endswith(".json"):
         with open(filename, 'r') as file:
             try:
                 data = json.load(file)
             except json.JSONDecodeError:
-                print(f"{datetime.now().strftime('%b %d %H:%M:%S')} Error decoding JSON from file: {filename}")
+                print(f"{hostname} {datetime.now().strftime('%b %d %H:%M:%S')} Error decoding JSON from file: {filename}")
 
     jobname = data['jobs'][0]['jobname']
     if jobname == "randread":
@@ -212,6 +219,7 @@ def insert_entry_and_check_completion (filename, hostname, total_node_count):
         if hostname_exists_in_file == 0:
             file.write(f"{hostname} \n")
     
+    #after the above all the rest may not be needed if we will sync iterations via MPI or a different method (sockets?) which is isolated from any other actions
     start_waiting = time.time()
 
     line_count_is_sufficient = 0
@@ -225,7 +233,7 @@ def insert_entry_and_check_completion (filename, hostname, total_node_count):
         if how_long > 10:
             type_line_count = type(line_count)
             type_node_count = type(total_node_count)
-            print (f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] waited too long. File ({filename}) line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
+            #print (f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] waited too long. File ({filename}) line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
             break
 
 def grep_string(filename, search_string):

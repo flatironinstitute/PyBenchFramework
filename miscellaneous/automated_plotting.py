@@ -204,6 +204,7 @@ if __name__ == "__main__":
             if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest" or benchmark.upper() == "MDTESTINPARTS" or benchmark.lower() == "mdtestinparts":
                 plot_and_compare_mdtest(i, output_path)
             else:
+                #all_result_list is a list of lists. Each of these lists corresponds to a line in the input file, which stores a comma-delimited list of job result directories. In this secondary 'job list', each 'job list' element corresponds to one of the jobs in the line from the input file and is a list that contains a list of lists, which are node_count_list, bw_list, iops_list, processor_counts, plot_title, node_list which are each a list of lists storing individual values (node counts, node dicts, processor counts)
                 plot_and_compare(i, output_path, all_result_list)
     else:
         first_result_list = create_data_list(full_or_not, first_job_list,benchmark, block_size)

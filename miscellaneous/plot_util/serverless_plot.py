@@ -240,17 +240,14 @@ def plot_and_compare_mdtest(result_list, output_path):
     
     fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(5 * num_plot_cols, 5 * num_plot_rows))
     #fig, axs = plt.subplots(num_plot_rows, num_plot_cols, figsize=(6 * num_plot_cols, 6 * num_plot_rows))
-    
-    #if num_plots ==1:
-    #    axs = [axs]
    
     if num_plots == 1:
         axs = [axs]  # Ensure axs is a list with one element
     elif num_plot_rows > 1 or num_plot_cols > 1:
         axs = axs.flatten()  # Flatten the 2D array into a 1D array for easy indexing
 
-    filename = []
-    
+    filename = ""
+
     key_list = ["Directory creation",
             "Directory stat",
             "Directory removal",
@@ -266,11 +263,16 @@ def plot_and_compare_mdtest(result_list, output_path):
     # Set the column titles
     for col in range(num_plot_cols):
         x_position = (col + 0.5) / num_plot_cols
-        fig.text(x_position,0.95, f'{result_list[col][0].iloc[0]["plot_title"]}', ha='center', va='bottom', fontsize=16)
+        fig.text(x_position,0.97, f'{result_list[col][0].iloc[0]["plot_title"]}', ha='center', va='bottom', fontsize=16)
+        filename = result_list[col][0].iloc[0]["plot_title"]
 
     for op_index in range(len(key_list)):
 
+        max_perf = 0
+        is_max_here = 0
         for idx,file_lists in enumerate(result_list):
+            #print(result_list)
+            #break
             ax = axs[plot_counter]
 
             all_dict = {}
@@ -330,24 +332,47 @@ def plot_and_compare_mdtest(result_list, output_path):
             for i in range(len(nodes_list)):
                 ax.plot(nodes_list[i], mean_perf_list[i], '-o', label=f'{ranks_per_node_counts[i]} ranks')
 
+            #print(mean_perf_list)
             ax.xaxis.set_major_locator(MultipleLocator(2))
             ax.set_xlabel('nodes')
             ax.set_ylabel('OPS/sec')
             ax.set_title(key_list[op_index])
-            #ax.set_ylim(bottom=0)
 
-            if plot_counter % num_plot_cols != 0:
-                ax.sharey(axs[plot_counter - 1])
-                #max_y = max(max(mean_perf_list[i]),max(mean_perf_list[i-1]))
-                #ax.set_ylim(0, max_y * 1.1)
+                #max_y = 0
+                #print(mean_perf_list[plot_counter])
+            for perf_list in mean_perf_list:
+                if max_perf <= max(perf_list):
+                    max_perf = max(perf_list)
+                    is_max_here = plot_counter
+                    #print(f"max is in plot {is_max_here}")
+                    ax.set_ylim(0, max_perf * 1.1)
+
+                
+            #print(f"Column num is {num_plot_cols}, and current plot is {plot_counter}")
+            if (plot_counter + 1) % num_plot_cols == 0 and plot_counter > 1:
+                print(f"Last plot in row!")
+                #print(f"Column num is {num_plot_cols}, and current plot is {plot_counter}")
+                #start_of_loop = plot_counter - (num_plot_cols - 1)
+                #end_of_loop = plot_counter
+                #print(f"Start of loop is {start_of_loop}, and end of loop is {end_of_loop}")
+                for i in range (plot_counter - (num_plot_cols - 1), plot_counter + 1):
+                    #print(f"counter is {i}, and max is in plot {is_max_here}")
+                    if i != is_max_here:
+                        axs[i].sharey(axs[is_max_here])
+                        print(f"Plot {i} sharing the axis of plot {is_max_here}!")
+                max_perf = 0
 
             #ax.set_ylim(bottom=0)
             ax.legend(title='Ranks per node')
             plot_counter += 1
     plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to make room for column titles
 
-    final_filename = "_".join(filename)
-    final_filename = re.sub(r'[^A-Za-z0-9._-]+', '', 'test_mdtest_dir_plotting')
+    filename = filename.lstrip()
+    filename = filename.rstrip()
+    filename = re.sub('\n', '_', filename)
+    final_filename = re.sub(' ', '_', filename) 
+    print(final_filename)
+    #final_filename = re.sub(r'[^A-Za-z0-9._-]+', '', 'test_mdtest_dir_plotting')
 
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     
@@ -355,11 +380,12 @@ def plot_and_compare_mdtest(result_list, output_path):
 def plot_and_compare(all_result_list, output_path, list_of_lists):
     #Do I need lists or dicts of lists
     #How about two dicts that each have lists as values for each key?
+    #Each of these 'all_result_list' elements is a list containing values for each job result set to be plotted. Each job result set is further broken down into nested lists. We get the length of this 'all_result_list' in order to know how many job result sets we're plotting in this call of 'plot_and_compare'
+
     num_plots = len(all_result_list)  # Determine the number of plots needed
     #print(num_plots)
-    #READ!!! for now the number of 'plot rows' is 2 because I want the single line of plots to sit on the first row and the table to sit on the second row. When this code is generalized to iterate over a whole list, the plot row count will have to be number of rows for plots + 1 (for the table), put differently: number_of_rows = (number_of_plots / number_of_columns) + 1
     #num_rows = 2
-    fig, axs = plt.subplots(1, num_plots, figsize=(7 * num_plots, 7), sharey=True)
+    fig, axs = plt.subplots(1, num_plots, figsize=(10 * num_plots, 9), sharey=True)
 
     if num_plots == 1:
         axs = [axs]  # Ensure axs is a list with one element
@@ -370,17 +396,62 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
     #print(len(all_result_list))
     #print(all_result_list)
 
+    iop_min = 0 #min(iop_list[i])
+    iop_max = 0 #max(iop_list[i])
+    bw_min = 0
+    bw_max = 0
+    lim_counter = 0
+    bw_lim_counter = 0
+    
+    for lists in all_result_list:
+        node_count_list, bw_list, iop_list, proc_list, plot_title, node_list = lists
+        for list_el in iop_list:
+            if lim_counter == 0:
+                iop_min = min(list_el)
+                iop_max = max(list_el)
+            else:
+                if iop_min >= min(list_el):
+                    iop_min = min(list_el)
+                if iop_max <= max(list_el):
+                    iop_max = max(list_el)
+            lim_counter += 1
+        
+        for list_el in bw_list:
+            if bw_lim_counter == 0:
+                bw_min = min(list_el)
+                bw_max = max(list_el)
+            else:
+                if bw_min >= min(list_el):
+                    bw_min = min(list_el)
+                if bw_max <= max(list_el):
+                    bw_max = max(list_el)
+            bw_lim_counter += 1
+    
+    iop_min *=0.9
+    iop_max *=1.1
+    bw_min *=0.9
+    bw_max *=1.1
+    metrics = {}
+
+    #print(f"LIMITS ARE: BW {bw_min},{bw_max} and IOPS {iop_min},{iop_max}")
     for idx, lists in enumerate(all_result_list):
+    
+        metrics[f"{idx}"] = []
+        metrics_counter = 0
 
         node_count_list, bw_list, iop_list, proc_list, plot_title, node_list = lists
         
+        #print (node_count_list) #bw_list, iop_list, proc_list, plot_title, node_list)
         def find_stdev_from_nodelist(node_dict):
             value_list = []
+            #print("HELLO")
             for key, value in node_dict.items():
                 value_list.append(value['node_bw'])
+                #print(value['node_bw'])
 
             node_perf_stdev = statistics.stdev(value_list)
-            error_metric = node_perf_stdev * math.sqrt(len(value_list))
+            #error_metric = node_perf_stdev * math.sqrt(len(value_list))
+            error_metric = node_perf_stdev * len(value_list)
             return error_metric
 
         #print(node_list)
@@ -388,32 +459,53 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
         # Calculate the row and column indices for the current subplot
         #if num_rows != 1:
         ax = axs[idx]
+        #if idx == 0:
+        ax2 = ax.twinx()
+        ax2.set_ylabel("IOPS")
 
+        ax2.set_ylim(iop_min, iop_max)
+        ax.set_ylim(bw_min, bw_max)
+
+        #ax.set_units()
         for i in range(len(node_count_list)):
             errorlist = np.zeros((2, len(node_count_list[i])))  # Shape (2, N)
 
             for j in range(len(node_count_list[i])):
                 
                 # Store errors in errorlist (2, N)
+                #print(node_list[i][j])
                 error = find_stdev_from_nodelist(node_list[i][j])
                 errorlist[0, j] = error  # Lower error (row index 0)
                 errorlist[1, j] = error  # Upper error (row index 1)
+                
+                # Add error bar metric to list here. How to structure list? let's try json. Add plot count to the error metric (e.g. metrics could be a dict the keys of which are the plot counters and the values of which are lists of dicts where the keys are 'node count', 'proc count', and 'error metric', and the values correspond to each.            
+                tmpdict = {}
+                metrics[f"{idx}"].append(tmpdict)
+                metrics[f"{idx}"][metrics_counter]['node count'] = node_count_list[i][j]
+                metrics[f"{idx}"][metrics_counter]['proc count'] = proc_list[i]
+                metrics[f"{idx}"][metrics_counter]['error percentage'] = int(error / bw_list[i][j] * 100)
+                metrics_counter += 1
+
+            # Plot with error bars
+            ax.errorbar(
+                    node_count_list[i],
+                    bw_list[i],
+                    yerr=errorlist,
+                    fmt='o-',
+                    capsize=5,
+                    label=f'{proc_list[i]}_jobs'
+                    )
             
-            # Plot with error bars
-            ax.errorbar(node_count_list[i], bw_list[i], yerr=errorlist, fmt='o-', capsize=5, label=f'{proc_list[i]}_jobs')
-            '''
-            # Plot with error bars
-            ax.errorbar([node_count_list[i]], [bw_list[i]], yerr=errorlist, fmt='o-', capsize=5, label=f'{proc_list[i]}_jobs')
-            #ax.plot(node_count_list[i], bw_list[i], '-o', label=f'{proc_list[i]}_jobs')
-            '''
+
         plot_title[0] = plot_title[0].replace("\n", "")
         ax.xaxis.set_major_locator(MultipleLocator(2))
         ax.set_xlabel('nodes')
         ax.set_ylabel('GB/s')
         ax.set_title(plot_title[0])
         ax.legend(title='Type of run')
-        
-        filename.append(re.split('-',plot_title[0].strip(" "))[0])
+        ax.tick_params(direction='out', labelleft=True) 
+        if idx <= 1:
+            filename.append(re.split('-',plot_title[0].strip(" "))[0])
         
     final_filename = "_".join(filename)
     final_filename = final_filename.replace(" ", "_")
@@ -426,6 +518,8 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
     #fig.text(0.5, 0.1, 'This is some text below the plot', ha='center', fontsize=12)
     
     #final_filename = "testing_fio_ior_compare"
+    with open (f"{output_path}/metrics.json", 'w') as f:
+        json.dump(metrics, f, indent=4)
     plt.savefig(f"{output_path}/{final_filename}.svg", format="svg")
     plt.close()
 

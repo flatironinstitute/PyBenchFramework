@@ -134,6 +134,11 @@ def test_wrap_mdtest(args, PyBench_root_dir):
 
                                 #Run mdtest through object and enter optimizer as necessary
                                 mdtest_obj_dict[f"{command_extent_element}_{tmp_node}_nodes_{ranks_per_node}_ranks_{files_per_rank}_files_per_rank"].run()
+                                print(f"Does this object exist?, ", mdtest_obj_dict[f"{command_extent_element}_{tmp_node}_nodes_{ranks_per_node}_ranks_{files_per_rank}_files_per_rank"].elapsed_time)
+
+                                if int(mdtest_obj_dict[f"{command_extent_element}_{tmp_node}_nodes_{ranks_per_node}_ranks_{files_per_rank}_files_per_rank"].elapsed_time) <= 10:
+                                    print("Warning!!! This run took less than 10 seconds!, not sleeping for now...")
+                                    #time.sleep(10)
                                 
                                 #create/delete snapshots
                                 '''

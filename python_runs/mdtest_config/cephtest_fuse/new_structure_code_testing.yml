@@ -1,10 +1,9 @@
 general_opts:
-  mpi_ranks: 16,8,4,2,1
+  mpi_ranks: 16,8,4,2
   node_count: 24,16,8,4,2,1
-
 mdtest_opts:
-  directory: /mnt/cephtest-fi5/test-rep3-ssd/skrit/snapshot_testing/programatic_testing/mdtest_with_snapshots2
-  files_per_rank: 100000
+  directory: /mnt/cephtest-fi5k/test-rep3-ssd/skrit/mdtest 
+  files_per_rank: 200000
   write_output: 1
   i: 1
   N: 1
@@ -13,7 +12,7 @@ mdtest_opts:
 not_taken_into_account:
   timed: 90, 180
   io_type: metadata
-  platform_type: cephtest-fi5-fuse
-  unit_restart: 1
-  job_note: "Testing fuse fi5 cluster metadata operations with snapshots. Plot title: fuse without snapshots"
+  platform_type: cephtest-fi5-kernel 
+  unit_restart: 0 
+  job_note: "Testing fuse fi5 metadata after OSD operations. Plot title: Fi-5 kernel Pacific"
   in_parts: 1
