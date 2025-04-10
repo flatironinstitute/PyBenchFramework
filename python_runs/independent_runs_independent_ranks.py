@@ -2,6 +2,7 @@ import os
 import fcntl
 import re
 import socket
+import shutil
 import handler_class
 #from datetime import datetime
 import datetime
@@ -98,6 +99,12 @@ def independent_ranks(args, PyBench_root_dir):
     if local_rank == 1:
         miscellaneous.create_hostname_mapping(log_dir,my_node_count)
 
+    # copy YAML config file to output directory for extra logging
+    if local_rank == 1 and my_node_count == 1:
+        if os.path.isfile(args['config']):
+            shutil.copy(args['config'],log_dir) 
+            
+
     for node_iter in nodes:
         #TESTING MPI BARRIER
         #replace this with if my rank + 1 <= node_iter
@@ -156,11 +163,11 @@ def independent_ranks(args, PyBench_root_dir):
 
                     # Continue with the rest of the code after the barrier
 
-                    print(f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] starting fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()}")
                     new_comm.Barrier()  # Wait for all processes to reach this point
+                    print(f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] starting fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()}")
                     fio_ob_dict[fio_ob_name].run()
-                    new_comm.Barrier()
                     print(f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] stopping fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()}")
+                    new_comm.Barrier()
                     #network_counter_collection.stop_thread = True
                     #background_thread.join()
                     #end_time = time.time()

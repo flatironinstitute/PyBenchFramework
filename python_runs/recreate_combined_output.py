@@ -4,10 +4,10 @@ from datetime import datetime
 import time
 import json
 
-block_sizes = ["4K"]
+block_sizes = ["4M"]
 nodes = [24, 16, 8, 4, 2]
 proc = [16, 8, 4, 2]
-log_dir = "../results/randwrite/Fi5-rep3-hdd-kernel/4159301"
+log_dir = "../results/randwrite/Fi5-ec63-ssd-kernel/4159330/"
 host_list = []
 with open (f"{log_dir}/host_list", 'r') as f:
     for line in f:

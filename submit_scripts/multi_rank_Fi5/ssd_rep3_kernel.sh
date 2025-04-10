@@ -2,11 +2,11 @@
 #SBATCH -o logs/ceph-fi5-kernel-ssd-rep3-%j.log
 #SBATCH -e logs/ceph-fi5-kernel-ssd-rep3-%j.err
 #SBATCH -p scc
-#SBATCH --nodes=24
+#SBATCH --nodes=4
 #SBATCH --comment "FI_JOB_RESOURCES=cephfs[cluster=cephtest-fi5,type=kernel]"
 #SBATCH --exclusive
 #SBATCH -C genoa
-##SBATCH --dependency=afterany:
+##SBATCH --dependency=afterany:4537653
 
 # Define root directory
 root_dir=$PyBench_root_dir

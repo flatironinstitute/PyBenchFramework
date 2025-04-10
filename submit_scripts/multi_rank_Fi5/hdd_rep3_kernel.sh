@@ -6,7 +6,7 @@
 #SBATCH --comment "FI_JOB_RESOURCES=cephfs[cluster=cephtest-fi5,type=kernel]"
 #SBATCH --exclusive
 #SBATCH -C genoa
-##SBATCH --dependency=afterany
+#SBATCH --dependency=afterany:4533538
 
 # Define root directory
 root_dir=$PyBench_root_dir
