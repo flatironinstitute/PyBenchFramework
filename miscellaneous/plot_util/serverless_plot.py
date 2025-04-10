@@ -462,9 +462,8 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
         #if idx == 0:
         ax2 = ax.twinx()
         ax2.set_ylabel("IOPS")
+        max_error = 0
 
-        ax2.set_ylim(iop_min, iop_max)
-        ax.set_ylim(bw_min, bw_max)
 
         #ax.set_units()
         for i in range(len(node_count_list)):
@@ -495,7 +494,15 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
                     capsize=5,
                     label=f'{proc_list[i]}_jobs'
                     )
+            if max(errorlist[1]) >= max_error:
+                max_error = max(errorlist[1])
             
+        ax2.set_ylim(0, iop_max)
+        if max_error > 0 :
+            ax.set_ylim(0, max_error + bw_max)
+            print(max_error/bw_max)
+        else:
+            ax.set_ylim(0, bw_max)
 
         plot_title[0] = plot_title[0].replace("\n", "")
         ax.xaxis.set_major_locator(MultipleLocator(2))

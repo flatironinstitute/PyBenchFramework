@@ -109,7 +109,7 @@ def full_paths(all_job_list, benchmark, block_size):
             try:
                 all_result_list.append(list(mod_return_FIO_data(list_instance, "testing_func", block_size, benchmark)))
             except TypeError:
-                print(f"Issue with returning FIO data from path provided '{list_instance[i]}'") 
+                print(f"Issue with returning FIO data from path provided '{list_instance}'") 
                 sys.exit()
         if benchmark.upper() == "MDTEST" or benchmark.lower() == "mdtest":
             #print(f"These are the jobs read from the input file: {all_job_list}")
@@ -191,11 +191,13 @@ if __name__ == "__main__":
         second_job_list.append(re.split(',', args['paths'])[1])
 
     full_or_not = args['full_paths']
-    if 'comparison' in args.keys():
-        if args['comparison'] == 'text':
+    print(args['comparison'])
+    if 'comparison' in args.keys() and args['comparison'] is not None:
+        if args['comparison'].lower() == "text" or args['comparison'].upper() == "TEXT":
+            print('here')
             all_result_list = create_data_list(full_or_not, all_job_list, benchmark, block_size)
             for i in all_result_list:
-                text_comparison(i, benchmark)
+                new_text_comparison(i, benchmark)
 
             sys.exit()
     if not args['one_path']:
