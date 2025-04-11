@@ -8,7 +8,7 @@ unique_filename=0
 filename_format=__hostname__.$filenum
 group_reporting
 bs=__block_size__
-fsync=100
+fsync=10
 invalidate=1
 #iodepth=1
 time_based=1

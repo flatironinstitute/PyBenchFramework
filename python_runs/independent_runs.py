@@ -16,8 +16,16 @@ import time
 import mmap
 import count_lines_in_uncombined
 import multi_level_barrier
+from mpi4py import MPI
 
 def serverless_fio(args, PyBench_root_dir):
+    #testing mpi
+    # Initialize MPI
+    comm = MPI.COMM_WORLD    # Default communicator (all processes)
+    rank = comm.Get_rank()   # Get the rank (ID) of this process
+    size = comm.Get_size()   # Get the total number of processes
+    #finished mpi section
+
     def background_network_monitor(args, job_count, node_count, block_size, PyBench_root_dir):
             print("network_monitoring")
             network_counter_collection.monitor_traffic(args, job_count, node_count, block_size, PyBench_root_dir)
@@ -42,7 +50,7 @@ def serverless_fio(args, PyBench_root_dir):
     command_log_dir = f"{log_dir}/commands"
     
     #create a map between hostnames and generic indexed hostnames
-    miscellaneous.create_hostname_mapping(log_dir)
+    miscellaneous.create_hostname_mapping(log_dir,rank)
 
     if 'job_note' in args.keys():
         job_note = f"{args['job_note']} {args['io_type']}"
@@ -61,13 +69,24 @@ def serverless_fio(args, PyBench_root_dir):
     node_split_file = f"{log_dir}/host_list"
     miscellaneous.insert_entry_and_check_completion(node_split_file, hostname, total_node_count)
 
+    #Is this still needed (probably not)?
     my_line_num = miscellaneous.grep_string(node_split_file, hostname)
 
     #as job progesses iteration count increases
     iteration_count = 0
 
     for node_iter in nodes:
-        if my_line_num <= node_iter:
+        #TESTING MPI BARRIER
+        #replace this with if my rank + 1 <= node_iter
+        #if my_line_num <= node_iter:
+        #if rank <= node_iter - 1:
+        # Create a new communicator for the selected ranks
+        if rank <= node_iter - 1:
+            new_comm = comm.Split(color=1, key=rank)  # Grouping ranks > some_count
+        else:
+            new_comm = comm.Split(color=MPI.UNDEFINED, key=rank)  # Exclude ranks <= some_count
+
+        if new_comm != MPI.COMM_NULL:
             for block_size in block_sizes:
                 #print(f"This iteration's block size is: {block_size}")
                 for job_count in proc:
@@ -76,7 +95,7 @@ def serverless_fio(args, PyBench_root_dir):
 
                     #Reset file contents for FIO config file
                     file_contents = miscellaneous.reset_file_contents(original_file_contents, args, job_count, block_size,log_dir)
-                    fio_job_config = f"examples/test_files/{job_number}_{hostname}_{job_count}p_{file_count}f_{block_size}_{args['io_type']}.fio"
+                    fio_job_config = f"{PyBench_root_dir}/examples/test_files/{job_number}_{hostname}_{job_count}p_{file_count}f_{block_size}_{args['io_type']}.fio"
                     with open(fio_job_config, 'w') as file:
                         file.write(file_contents)
 
@@ -96,9 +115,20 @@ def serverless_fio(args, PyBench_root_dir):
                     background_thread = threading.Thread(target=background_network_monitor, args=(args, job_count, node_iter, block_size, PyBench_root_dir))
                     background_thread.start()
                     start_time = time.time()
-                    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] starting fio?")
+                    #TESTING MPI BARRIER
+                    # Synchronize all processes at the barrier
+                    print(f"Process {rank} is reaching the barrier.")
+                    new_comm.Barrier()  # Wait for all processes to reach this point
+
+                    # Once the barrier is passed, all processes continue
+                    #current_time = time.time()
+                    print(f"Process {rank} has passed the barrier. {time.time()}")
+
+                    # Continue with the rest of the code after the barrier
+
+                    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] starting fio Job num: {job_count}, node count: {node_iter}, IO type {args['io_type']} {time.time()}")
                     fio_ob_dict[fio_ob_name].run()
-                    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] stopping fio?")
+                    print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] stopping fio Job num: {job_count}, node count: {node_iter}, IO type {args['io_type']} {time.time()}")
                     network_counter_collection.stop_thread = True
                     background_thread.join()
                     end_time = time.time()
@@ -131,7 +161,11 @@ def serverless_fio(args, PyBench_root_dir):
                         print(f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] FIO JSON LOG FILE DOESN'T EXIST!!! - iteration {iteration_count}")
                         sys.exit()
 
+                    #This is wrong I think. Needs to change to a barrier outside of any iteration and before any log combination/modification. It still works because rank 0 is the only rank taking action after the iterations but... Either way it works... Just think about whether this is the spot to put it and about whether it's this communicator or the default communicator that should be used. 
+                    new_comm.Barrier()  # Wait for all processes to reach this point
 
+                    #Probably remove this
+                    '''
                     if 'wait_for_others' in args.keys():
                         # B) Barrier Phase=1: "Done with iteration i"
                         multi_level_barrier.barrier_phase(first_barrier_file, iteration_count, hostname, phase=1, node_count=node_iter)
@@ -140,14 +174,18 @@ def serverless_fio(args, PyBench_root_dir):
                         #    This ensures that *every node* knows that every other node has finished iteration i.
                         multi_level_barrier.barrier_phase(second_barrier_file, iteration_count, hostname, phase=2, node_count=node_iter)
                     iteration_count += 1
-                    '''
+                    #BETWEEN BARRIER AND ORIGINAL FILE_BASED WAITING
                     if args['wait_for_others']:
                         wait_res = count_lines_in_uncombined.wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter, 1000)
                     else:
                         wait_res = count_lines_in_uncombined.wait_until_line_count_is_node_count(uncombined_json_log_file, hostname, node_iter, 100)
                     '''
                     #sys.stdout.flush()
+                    print("Sleeping for 15 seconds...")
+                    time.sleep(15)
                     
+
+    #probably change this so that only rank 0 executes anything
     for node_iter in nodes:
         for block_size in block_sizes:
             for job_count in proc:
@@ -158,7 +196,7 @@ def serverless_fio(args, PyBench_root_dir):
                 if os.path.exists(json_log_file):
                     bw, iops = miscellaneous.load_json_results(json_log_file)
 
-                if my_line_num == 1:
+                if rank == 0:
                     bw_total = 0
                     iops_total = 0
 

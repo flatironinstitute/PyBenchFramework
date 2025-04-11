@@ -1,6 +1,6 @@
 #List of required options
 mpi_ranks: 16,8,4,2,1
-directory: /mnt/cephtest-fi5/test-rep3-hdd/skrit/mdtest_new
+directory: /mnt/cephtest-fi5/test-rep3-ssd/skrit/snapshot_testing/programatic_testing/mdtest_root
 files_per_rank: 100 
 node_count: 2,4,8,16,24
 timed: 60, 90

@@ -19,6 +19,7 @@ import mmap
 import count_lines_in_uncombined
 import multi_level_barrier
 from mpi4py import MPI
+from analyze_and_rebalance_load import * 
 
 def independent_ranks(args, PyBench_root_dir):
     #testing mpi
@@ -50,7 +51,6 @@ def independent_ranks(args, PyBench_root_dir):
 
     log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
     command_log_dir = f"{log_dir}/commands"
-    
 
     today = datetime.date.today()
     formatted = today.strftime("%m/%d/%Y")  # e.g. "03/19/2025"
@@ -103,7 +103,13 @@ def independent_ranks(args, PyBench_root_dir):
     if local_rank == 1 and my_node_count == 1:
         if os.path.isfile(args['config']):
             shutil.copy(args['config'],log_dir) 
-            
+
+    start_and_end_path = f"{log_dir}/start_and_end_times"
+    if local_rank == 1 and my_node_count == 1:
+        #start_and_end_path = f"{log_dir}/start_and_end_times"
+        if not os.path.exists(start_and_end_path):
+            os.mkdir(start_and_end_path)
+
 
     for node_iter in nodes:
         #TESTING MPI BARRIER
@@ -115,13 +121,17 @@ def independent_ranks(args, PyBench_root_dir):
         for block_size in block_sizes:
             for job_count in proc:
                 #print(f"This iteration's block size is: {block_size}")
-
+                new_comm = {}
+                #print(f"{hostname}: My node count = {my_node_count} and my local rank = {local_rank}. iteration node count = {node_iter} and iteration job count = {job_count}")
                 if my_node_count <= node_iter  and local_rank <= job_count:
-                    new_comm = comm.Split(color=1, key=rank)  # Grouping ranks > some_count
+                    #new_comm[my_node_count] = comm.Split(color=my_node_count+1, key=rank)  # Grouping ranks > some_count
+                    iteration_comm = comm.Split(color=1,key=rank)
                 else:
-                    new_comm = comm.Split(color=MPI.UNDEFINED, key=rank)  # Exclude ranks <= some_count
+                    #new_comm[my_node_count] = comm.Split(color=MPI.UNDEFINED, key=rank)  # Exclude ranks <= some_count
+                    iteration_comm = comm.Split(color=MPI.UNDEFINED, key=rank)
+                
 
-                if new_comm != MPI.COMM_NULL:
+                if iteration_comm != MPI.COMM_NULL:
                     
                     #just for organizational purposes, not related to actual mpi rank
                     global_rank = my_node_count * local_rank 
@@ -163,11 +173,50 @@ def independent_ranks(args, PyBench_root_dir):
 
                     # Continue with the rest of the code after the barrier
 
-                    new_comm.Barrier()  # Wait for all processes to reach this point
-                    print(f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] starting fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()}")
+                    iteration_comm.Barrier()  # Wait for all processes to reach this point
+                    start_time = time.time()
+                    starting_statement = f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] starting fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()} \n"
                     fio_ob_dict[fio_ob_name].run()
-                    print(f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] stopping fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()}")
-                    new_comm.Barrier()
+                    end_time = time.time()
+                    ending_statement = f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] stopping fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()} \n"
+
+                    
+                    if rank == my_node_count*1 - 1:
+                        #print(f"rank {rank} from node count: {my_node_count} wants to receive.")
+                        #combined_start_times = []
+                        combined_times = []
+                        combined_times.append((hostname, rank, start_time, end_time))
+                        receive_list = []
+                        previous_rank = 0
+
+                        for i in range(job_count - 1):
+                            if i == 0:
+                                receive_list.append(rank + node_iter)
+                            else:
+                                receive_list.append(receive_list[i-1] + node_iter)
+
+                        #print(f"rank: {rank}, receive_list = {receive_list}")
+                        for source_rank in receive_list:
+                            rank_start_and_end = iteration_comm.recv(source=(source_rank), tag=0)
+                            combined_times.append(rank_start_and_end)
+                            #print(f"{rank} received {rank_start_and_end} from source rank {source_rank}")
+                            #print(f"Rank:  wants to receive data from source rank: {source_rank - 1}")
+                            #combined_end_times.append([f"{local_rank}_end": end_time])
+
+                        
+                        with open(f"{start_and_end_path}/{job_number}_{hostname}_{node_iter}_{job_count}p_{file_count}f_{block_size}_{args['platform_type']}_times", 'a') as file:
+                            json.dump(combined_times, file, indent=4)
+                        
+                    else:
+                        iteration_comm.send((hostname, rank, start_time, end_time), dest=(my_node_count*1 - 1), tag=0)
+                        print(f"Rank: {rank} wants to send data to rank:{my_node_count*1 - 1}")
+                    
+                    iteration_comm.Barrier()
+
+                    print(starting_statement)
+                    print(ending_statement)
+                    
+                    #log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name])
                     #network_counter_collection.stop_thread = True
                     #background_thread.join()
                     #end_time = time.time()
@@ -202,7 +251,7 @@ def independent_ranks(args, PyBench_root_dir):
                         sys.exit()
 
                     #This is wrong I think. Needs to change to a barrier outside of any iteration and before any log combination/modification. It still works because rank 0 is the only rank taking action after the iterations but... Either way it works... Just think about whether this is the spot to put it and about whether it's this communicator or the default communicator that should be used. 
-                    new_comm.Barrier()  # Wait for all processes to reach this point
+                    iteration_comm.Barrier()  # Wait for all processes to reach this point
 
                     #Probably remove this
                     #sys.stdout.flush()

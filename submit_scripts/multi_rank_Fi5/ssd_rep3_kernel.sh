@@ -27,6 +27,7 @@ mpirun -n 384 --bind-to none --map-by node -N 16 python python_runs/run.py --ben
 
 rm -f results/write/Fi5-rep3-ssd-kernel/${SLURM_JOB_ID}/*.tmp
 rm -f results/write/Fi5-rep3-ssd-kernel/${SLURM_JOB_ID}/*.json
+rm -f results/write/Fi5-rep3-ssd-kernel/${SLURM_JOB_ID}/start_and_end_times/*
 
 mpirun -n 384 --bind-to none --map-by node -N 16 python python_runs/run.py --benchmark "fio-independent-ranks" --slurm-job-number ${SLURM_JOB_ID} --io-type "read" --config python_runs/config/cephtest-fi5/test_kernel_rep3_ssd.yml --block-size 4M --first-node ${first_node} --total-node-count 24
 

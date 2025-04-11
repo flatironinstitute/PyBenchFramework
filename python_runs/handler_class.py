@@ -20,6 +20,8 @@ class BenchmarkTool(ABC):
         self.params = {}
         self.ceph_util = []
         self.elapsed_time = 0
+        self.start_times = []
+        self.end_times = []
         
     @abstractmethod
     def setup_command(self, **params):

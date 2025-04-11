@@ -1,9 +1,9 @@
 general_opts:
   mpi_ranks: 16,8,4,2
-  node_count: 24,16,8,4,2,1
+  node_count: 6,4,2,1
 mdtest_opts:
-  directory: /mnt/cephtest-fi5k/test-rep3-ssd/skrit/mdtest 
-  files_per_rank: 200000
+  directory: /mnt/cephtest-fi5k/test-rep3-ssd/skrit/mdtest_tmp 
+  files_per_rank: 2500000
   write_output: 1
   i: 1
   N: 1
