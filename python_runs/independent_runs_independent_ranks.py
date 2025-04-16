@@ -136,7 +136,7 @@ def independent_ranks(args, PyBench_root_dir):
                     #just for organizational purposes, not related to actual mpi rank
                     global_rank = my_node_count * local_rank 
 
-                    print(f"{hostname}: local rank: {local_rank}, my node count: {my_node_count}, global rank: {global_rank}, total node count: {node_iter}, ranks per node: {job_count}, io type: {args['io_type']}")
+                    #print(f"{hostname}: local rank: {local_rank}, my node count: {my_node_count}, global rank: {global_rank}, total node count: {node_iter}, ranks per node: {job_count}, io type: {args['io_type']}")
                     
                     file_count = job_count
 
@@ -165,11 +165,11 @@ def independent_ranks(args, PyBench_root_dir):
                     start_time = time.time()
                     #TESTING MPI BARRIER
                     # Synchronize all processes at the barrier
-                    print(f"rank {local_rank} on node {my_node_count} is reaching the barrier.")
+                    #print(f"rank {local_rank} on node {my_node_count} is reaching the barrier.")
 
                     # Once the barrier is passed, all processes continue
                     #current_time = time.time()
-                    print(f"rank {local_rank} on node {my_node_count} has passed the barrier. {time.time()}")
+                    #print(f"rank {local_rank} on node {my_node_count} has passed the barrier. {time.time()}")
 
                     # Continue with the rest of the code after the barrier
 
@@ -180,7 +180,7 @@ def independent_ranks(args, PyBench_root_dir):
                     end_time = time.time()
                     ending_statement = f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] stopping fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()} \n"
 
-                    
+                    '''
                     if rank == my_node_count*1 - 1:
                         #print(f"rank {rank} from node count: {my_node_count} wants to receive.")
                         #combined_start_times = []
@@ -206,17 +206,27 @@ def independent_ranks(args, PyBench_root_dir):
                         
                         with open(f"{start_and_end_path}/{job_number}_{hostname}_{node_iter}_{job_count}p_{file_count}f_{block_size}_{args['platform_type']}_times", 'a') as file:
                             json.dump(combined_times, file, indent=4)
-                        
+                    ''' 
+                    if rank != 0:
+                        combined_times = (hostname, rank, start_time, end_time)
+                        iteration_comm.send(combined_times, dest=0, tag=0)
+                        #iteration_comm.send((hostname, rank, start_time, end_time), dest=(my_node_count*1 - 1), tag=0)
+                        #print(f"Rank: {rank} wants to send data to rank:{my_node_count*1 - 1}")
                     else:
-                        iteration_comm.send((hostname, rank, start_time, end_time), dest=(my_node_count*1 - 1), tag=0)
-                        print(f"Rank: {rank} wants to send data to rank:{my_node_count*1 - 1}")
+                        start_end_times_list = []
+
+                        for i in range(iteration_comm.Get_size()):
+                            #print(i)
+                            if i != 0:
+                                start_end_times_list.append(iteration_comm.recv(source=i, tag=0))
                     
                     iteration_comm.Barrier()
 
-                    print(starting_statement)
-                    print(ending_statement)
+                    #print(starting_statement)
+                    #print(ending_statement)
                     
-                    #log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name])
+                    if rank == 0:
+                        log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name],start_end_times_list)
                     #network_counter_collection.stop_thread = True
                     #background_thread.join()
                     #end_time = time.time()
