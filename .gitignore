@@ -1,0 +1,6 @@
+python_runs/__pycache__
+python_runs/IOR_config
+examples/test_files
+logs
+tmp
+results
