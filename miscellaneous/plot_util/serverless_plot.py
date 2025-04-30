@@ -286,18 +286,18 @@ def plot_and_compare_mdtest(result_list, output_path):
 
                 node_count = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'node_count'].values[0])
 
-                if key_list[op_index] != "File read" and key_list[op_index] != "File stat" and key_list[op_index] != "Directory stat" and key_list[op_index] != "File removal" or node_count > 2:
-                    ranks_per_node = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'ranks_per_node'].values[0])
-                    files_per_rank = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'files_per_rank'].values[0])
-                    mean_performance = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'Mean'].values[0])
-                    tmp_list.append(node_count)
-                    tmp_list.append(ranks_per_node)
-                    tmp_list.append(mean_performance)
-                    tmp_list.append(files_per_rank)
+                #if key_list[op_index] != "File read" and key_list[op_index] != "File stat" and key_list[op_index] != "Directory stat" and key_list[op_index] != "File removal" or node_count > 2:
+                ranks_per_node = int(dataframe.loc[dataframe['operation'] == key_list[op_index], 'ranks_per_node'].values[0])
+                files_per_rank = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'files_per_rank'].values[0])
+                mean_performance = float(dataframe.loc[dataframe['operation'] == key_list[op_index], 'Mean'].values[0])
+                tmp_list.append(node_count)
+                tmp_list.append(ranks_per_node)
+                tmp_list.append(mean_performance)
+                tmp_list.append(files_per_rank)
 
-                    if ranks_per_node not in all_dict:
-                        all_dict[ranks_per_node] = []
-                    all_dict[ranks_per_node].append(tmp_list)
+                if ranks_per_node not in all_dict:
+                    all_dict[ranks_per_node] = []
+                all_dict[ranks_per_node].append(tmp_list)
 
             sorted_data = {k: v for k, v in sorted(all_dict.items(), key=lambda item: item[0])}
             for key in sorted_data:
@@ -473,7 +473,10 @@ def plot_and_compare(all_result_list, output_path, list_of_lists):
                 
                 # Store errors in errorlist (2, N)
                 #print(node_list[i][j])
-                error = find_stdev_from_nodelist(node_list[i][j])
+                if len(node_list[i][j]) > 1:
+                    error = find_stdev_from_nodelist(node_list[i][j])
+                else:
+                    error = 0.0
                 errorlist[0, j] = error  # Lower error (row index 0)
                 errorlist[1, j] = error  # Upper error (row index 1)
                 

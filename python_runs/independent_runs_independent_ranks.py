@@ -226,7 +226,8 @@ def independent_ranks(args, PyBench_root_dir):
                     #print(ending_statement)
                     
                     if rank == 0:
-                        log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name],start_end_times_list)
+                        #log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name],start_end_times_list)
+                        log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name])
                     #network_counter_collection.stop_thread = True
                     #background_thread.join()
                     #end_time = time.time()
