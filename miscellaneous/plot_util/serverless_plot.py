@@ -369,6 +369,7 @@ def plot_and_compare_mdtest(result_list, output_path):
 
     filename = filename.lstrip()
     filename = filename.rstrip()
+    filename = re.sub(',', '', filename)
     filename = re.sub('\n', '_', filename)
     final_filename = re.sub(' ', '_', filename) 
     print(final_filename)

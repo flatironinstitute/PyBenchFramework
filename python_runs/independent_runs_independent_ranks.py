@@ -247,6 +247,7 @@ def independent_ranks(args, PyBench_root_dir):
                                 split_dir = re.split(pattern, args['directory'])
                                 cephtest_root = '/'+split_dir[1]+'/'+split_dir[2]
                                 miscellaneous.restart_ceph_unit(cephtest_root)
+                                print(f"restarting the daemon on {hostname} from rank {rank}")
 
                     #wait_res = 0
                     #while wait_res == 0:
