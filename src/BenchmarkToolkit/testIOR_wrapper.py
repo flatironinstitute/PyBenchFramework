@@ -45,7 +45,7 @@ def test_wrap_IOR(args):
             with open(config_file, "r") as opts_file:
                 config = yaml.safe_load(opts_file)
         except Exception as e:
-            print(f'Exception while processing config file\n {e}')
+            print(f"Exception while processing config file\n {e}")
             sys.exit(1)
     else:
         raise ValueError("Configuration file must be specified. IOR...")

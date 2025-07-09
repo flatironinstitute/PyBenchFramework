@@ -1,5 +1,6 @@
 import paramiko
 
+
 def execute_ssh_command(hostname, username, command):
     # Create SSH client
     ssh_client = paramiko.SSHClient()
@@ -19,8 +20,8 @@ def execute_ssh_command(hostname, username, command):
         output = stdout.read().decode().strip()
 
         # Print output
-        #print("Output of the command:")
-        #print(output)
+        # print("Output of the command:")
+        # print(output)
 
     except paramiko.AuthenticationException:
         print("Authentication failed.")
@@ -29,5 +30,5 @@ def execute_ssh_command(hostname, username, command):
     finally:
         # Close the SSH connection
         ssh_client.close()
-    
+
     return output

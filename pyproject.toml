@@ -37,3 +37,4 @@ Repository = "https://github.com/flatironinstitute/PyBenchFramework"
 [project.scripts]
 pybench-prep = "BenchmarkToolkit.prep_work:main"
 pybench-run = "BenchmarkToolkit.run:main"
+pybench-run-mpi = "BenchmarkToolkit.mpi_run:main"

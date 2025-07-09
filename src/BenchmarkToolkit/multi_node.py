@@ -47,24 +47,35 @@ def server_fio(args):
             file_contents = file_contents.replace("__io_type_var__", args["io_type"])
             file_contents = file_contents.replace("__time_var__", f"{args['time']}")
 
-            fio_path = Path("examples", "test_files", f"multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio")
-            with open(fio_path, "w",) as file:
+            fio_path = Path(
+                "examples",
+                "test_files",
+                f"multinode_{job_count}p_{file_count}f_{args['block_size']}_{args['io_type']}.fio",
+            )
+            with open(
+                fio_path,
+                "w",
+            ) as file:
                 file.write(file_contents)
 
             fio_ob_key = f"{node_count}n_{job_count}p_{file_count}f_{args['io_type']}"
             fio_ob = fio_ob_dict[fio_ob_key] = handler_class.FIOTool()
 
             fio_ob.setup_command(
-                config_file = fio_path,
+                config_file=fio_path,
                 output_format="json",
                 output_file=f"{log_dir}/{node_count}n_{job_count}p_{file_count}f_{args['block_size']}.json",
                 host_file=f"host_files/{job_number}_{node_count}_hosts.file",
             )
 
             command_file_path = Path(
-                command_log_dir, f"{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['platform_type']}_command"
+                command_log_dir,
+                f"{job_number}_{node_count}n_{job_count}p_{file_count}f_{args['platform_type']}_command",
             )
-            with open(command_file_path, "a", ) as file:
+            with open(
+                command_file_path,
+                "a",
+            ) as file:
                 file.write(f"num nodes is {node_count}, job number is {job_count}")
                 tmp_cmd_string = ""
                 for cmd_el in fio_ob.command:
