@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "BenchmarkToolkit"
+version = "0.0.1"
+authors = [
+  { name="Shaker Krit", email="skrit@flatironinstitute.org" },
+]
+description = " BenchmarkToolkit is a Python library designed to simplify and streamline benchmarking tasks. This library provides a high-level abstraction over various benchmarking functions, allowing developers to easily perform performance testing and analysis with minimal setup."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+    "cryptography", # FIXME was: 42.0.8
+    "matplotlib",   # FIXME was: 3.9.2
+    "pandas",       # FIXME was: 2.2.2
+    "paramiko",     # FIXME was: 3.4.0
+    "psutil",       # FIXME was: 6.0.0
+    "PyYAML",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/BenchmarkToolkit",
+]
+
+[project.urls]
+Repository = "https://github.com/flatironinstitute/PyBenchFramework"
