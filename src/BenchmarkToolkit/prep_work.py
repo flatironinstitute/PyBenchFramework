@@ -3,7 +3,8 @@ from pathlib import Path
 from BenchmarkToolkit.args_handler import handle_arguments
 
 
-def prep_work(args):
+def main():
+    args = handle_arguments()
     job_number = str(args["slurm_job_number"])
 
     if args["benchmark"] in ("newIORTool", "testIORTool"):
@@ -30,8 +31,3 @@ def prep_work(args):
             print("Hostname mapping file created.")
     except FileExistsError:
         print("Warning: Hostname mapping file already exists.")
-
-
-def main():
-    args = handle_arguments()
-    prep_work(args)
