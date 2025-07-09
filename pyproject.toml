@@ -33,3 +33,6 @@ packages = [
 
 [project.urls]
 Repository = "https://github.com/flatironinstitute/PyBenchFramework"
+
+[project.scripts]
+pybench-prep = "BenchmarkToolkit.prep_work:main"

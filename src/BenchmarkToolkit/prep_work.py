@@ -1,45 +1,37 @@
-import os
-import sys
-import miscellaneous
-from args_handler import handle_arguments
+from pathlib import Path
 
-def prep_work(args, PyBench_root_dir):
-    job_number = args['slurm_job_number']
+from BenchmarkToolkit.args_handler import handle_arguments
 
-    #log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
-    if args['benchmark'] == "newIORTool" or args['benchmark'] == "testIORTool":
-        log_dir = f"{PyBench_root_dir}/results/iortest/{args['io_type']}/{args['platform_type']}/{job_number}"
-    if args['benchmark'] == "testmdtest":
-        log_dir = f"{PyBench_root_dir}/results/{args['not_taken_into_account']['io_type']}/{args['not_taken_into_account']['platform_type']}/{job_number}"
+
+def prep_work(args):
+    job_number = str(args["slurm_job_number"])
+
+    if args["benchmark"] in ("newIORTool", "testIORTool"):
+        log_dir = Path(
+            "results", "iortest", args["io_type"], args["platform_type"], job_number
+        )
+    elif args["benchmark"] == "testmdtest":
+        log_dir = Path(
+            "results",
+            args["not_taken_into_account"]["io_type"],
+            args["not_taken_into_account"]["platform_type"],
+            job_number,
+        )
     else:
-        log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
-    
-    command_log_dir = f"{log_dir}/commands"
-    network_log_dir = f"{PyBench_root_dir}/network_stats/{job_number}"
-    test_files_log = f"{PyBench_root_dir}/examples/test_files"
-    tmp_log_dir = f"{log_dir}/tmp_files"
+        log_dir = Path("results", args["io_type"], args["platform_type"], job_number)
 
-    miscellaneous.ensure_log_directory_exists(log_dir,1)
-    miscellaneous.ensure_log_directory_exists(command_log_dir,1)
-    miscellaneous.ensure_log_directory_exists(network_log_dir, 1)
-    miscellaneous.ensure_log_directory_exists(test_files_log, 1)
-    miscellaneous.ensure_log_directory_exists(tmp_log_dir, 1)
+    log_dir.joinpath("commands").mkdir(parents=True, exist_ok=True)
+    log_dir.joinpath("tmp_files").mkdir(parents=True, exist_ok=True)
+    Path("network_stats", job_number).mkdir(parents=True, exist_ok=True)
+    Path("examples", "test_files").mkdir(parents=True, exist_ok=True)
 
     try:
-        with open(f"{log_dir}/hostname_mapping.txt", "x") as file:
-            #file.write("Hostname_mapping file was created because it did not exist.\n")
-            pass
+        with open(log_dir.joinpath("hostname_mapping.txt"), "x") as _:
+            print("Hostname mapping file created.")
     except FileExistsError:
-        print("File already exists.")
+        print("Warning: Hostname mapping file already exists.")
 
-var_name = "PyBench_root_dir"
 
-try:
-    PyBench_root_dir = os.environ[var_name]
-    #print(f"{var_name} = {PyBench_root_dir}")
-except KeyError:
-    print(f"{var_name} is not set, please set the root directory before running this script.")
-    sys.exit(1)
-
-args = handle_arguments()
-prep_work(args, PyBench_root_dir)
+def main():
+    args = handle_arguments()
+    prep_work(args)
