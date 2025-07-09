@@ -8,7 +8,7 @@ version = "0.0.1"
 authors = [
   { name="Shaker Krit", email="skrit@flatironinstitute.org" },
 ]
-description = " BenchmarkToolkit is a Python library designed to simplify and streamline benchmarking tasks. This library provides a high-level abstraction over various benchmarking functions, allowing developers to easily perform performance testing and analysis with minimal setup."
+description = "BenchmarkToolkit is a Python library designed to simplify and streamline benchmarking tasks. This library provides a high-level abstraction over various benchmarking functions, allowing developers to easily perform performance testing and analysis with minimal setup."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -36,3 +36,4 @@ Repository = "https://github.com/flatironinstitute/PyBenchFramework"
 
 [project.scripts]
 pybench-prep = "BenchmarkToolkit.prep_work:main"
+pybench-run = "BenchmarkToolkit.run:main"

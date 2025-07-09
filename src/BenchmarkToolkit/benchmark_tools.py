@@ -9,7 +9,7 @@ def count_lines(filename):
             line_count += 1
     return line_count
 
-def create_node_list_file(node_string, filename, root_dir, job_num):
+def create_node_list_file(node_string, filename, job_num):
     
     node_list = []
     node_count_list = []
@@ -23,7 +23,7 @@ def create_node_list_file(node_string, filename, root_dir, job_num):
 
     for count in node_count_list:
         i=0
-        with open(f"{root_dir}/host_files/{job_num}_{count}_hosts.file", 'a') as file:
+        with open(f"host_files/{job_num}_{count}_hosts.file", 'a') as file:
             while i < count:
                 file.write(f"{node_list[i]}\n")
                 i += 1
