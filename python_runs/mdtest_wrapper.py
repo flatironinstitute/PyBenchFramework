@@ -1,31 +1,17 @@
-import os
-import socket
 import handler_class
-from datetime import datetime
 import sys
 import benchmark_tools
-import args_handler
-import miscellaneous
-import network_collect 
-import threading
-import time
 import re
 import shutil
 
 def wrap_mdtest(args, PyBench_root_dir):
-
     job_number = args['slurm_job_number']
 
-    current_dir = os.getcwd()
-
     mdtest_obj_dict = {}
-    #handler_class.mdtestTool()
 
     log_dir = f"{PyBench_root_dir}/results/{args['io_type']}/{args['platform_type']}/{job_number}"
     command_log_dir = f"{log_dir}/commands"
     tmp_log_dir = f"{log_dir}/tmp_files"
-    
-    hostname = socket.gethostname()
 
     mpi_ranks = sorted(benchmark_tools.split_arg_sequence(args['mpi_ranks'], "--mpi-ranks"))
     files_per_rank_list = sorted(benchmark_tools.split_arg_sequence(args['files_per_rank'], "--files-per-rank"))

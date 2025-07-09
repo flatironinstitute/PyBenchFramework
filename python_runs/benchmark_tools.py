@@ -1,11 +1,11 @@
-import os,sys
+import sys
 from datetime import datetime
 import re
 
 def count_lines(filename):
     with open(filename, 'r') as file:
         line_count = 0
-        for line in file:
+        for _ in file:
             line_count += 1
     return line_count
 
@@ -27,22 +27,6 @@ def create_node_list_file(node_string, filename, root_dir, job_num):
             while i < count:
                 file.write(f"{node_list[i]}\n")
                 i += 1
-
-'''
-def create_list_from_string_seq(string, filename, root_dir, job_num):
-    
-    node_list = []
-    node_count_list = []
-    
-    node_count_list = split_arg_sequence(str(string), '--split-host-file')
-    
-    with open(filename, 'r') as file:
-        for node_name in file:
-            stripped_name = node_name.strip()
-            node_list.append(f"{stripped_name}")
-    
-    return node_list
-'''
 
 def split_arg_sequence(sequence, arg):
     sequence_list = []
@@ -100,10 +84,10 @@ def mdtest_start_end_elapsed_time(log_file):
                     time_string = f"{re.split(' ', line)[3]} {re.split(' ', line)[4]}"
                     finish_time_init = datetime.strptime(time_string, time_format)
                     finish_time = int(finish_time_init.timestamp())
+        elapsed_time = finish_time - start_time
+
+        return start_time, finish_time, elapsed_time 
     except FileNotFoundError:
         print(f"{log_file} Not Found!")
-        sys.exit
+        sys.exit()
 
-    elapsed_time = finish_time - start_time
-
-    return start_time, finish_time, elapsed_time 

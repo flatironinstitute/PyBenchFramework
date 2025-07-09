@@ -1,32 +1,17 @@
 import os
-import socket
 import handler_class
-from datetime import datetime
 import json
 import sys
 import benchmark_tools
-import args_handler
 import miscellaneous
-import network_collect 
-import threading
-import time
 import re
-import shutil
 
 def wrap_IOR(args, PyBench_root_dir):
 
     job_number = args['slurm_job_number']
 
-    current_dir = os.getcwd()
-
-    mdtest_obj_dict = {}
-    #handler_class.mdtestTool()
-
     log_dir = f"{PyBench_root_dir}/results/iortest/{args['io_type']}/{args['platform_type']}/{job_number}"
     command_log_dir = f"{log_dir}/commands"
-    tmp_log_dir = f"{log_dir}/tmp_files"
-    
-    hostname = socket.gethostname()
 
     mpi_ranks = list(benchmark_tools.split_arg_sequence(args['mpi_ranks'], "--mpi-ranks"))
     filename = args['testFile']
@@ -34,10 +19,6 @@ def wrap_IOR(args, PyBench_root_dir):
     block_size = args['block_size']
     transfer_size = args['transfer_size']
     segment_count = args['segment_count']
-    reorder_tasks = args['reorder_tasks']
-    fsync = args['fsync']
-    #if 'output_file' in args.keys():
-    #    output_file = args['output_file']
     if 'output_format' in args.keys():
         output_format = args['output_format']
     if 'deadline_for_stonewalling' in args.keys():
@@ -110,4 +91,3 @@ def wrap_IOR(args, PyBench_root_dir):
             with open(combined_json_log_file, 'w') as json_file:
                 json.dump(data, json_file, indent=4)
                 print(f"Data successfully written to {combined_json_log_file}")
-

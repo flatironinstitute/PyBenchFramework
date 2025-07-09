@@ -7,12 +7,13 @@ def execute_ssh_command(hostname, username, command):
     # Automatically add host keys
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
+    output = ""
     try:
         # Connect to the SSH server
         ssh_client.connect(hostname, username=username)
 
         # Execute the command
-        stdin, stdout, stderr = ssh_client.exec_command(command)
+        _, stdout, _ = ssh_client.exec_command(command)
 
         # Read the output
         output = stdout.read().decode().strip()

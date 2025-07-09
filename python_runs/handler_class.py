@@ -1,6 +1,4 @@
 import subprocess
-import yaml
-import json
 from abc import ABC, abstractmethod
 import time
 import os
@@ -8,10 +6,7 @@ from execute_ssh import execute_ssh_command
 import re
 import shlex
 from datetime import datetime
-import time
 import sys
-import psutil
-import threading
 
 class BenchmarkTool(ABC):
     def __init__(self):
@@ -104,6 +99,8 @@ class BenchmarkTool(ABC):
                     #print (f"This is self.command: {self.command} .. handler_class:101")
                     # Run the command and capture output in real-time
                     process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+                    if not process.stdout:
+                        raise ValueError("Process output stream is empty. Check the command or its parameters.")
 
                     # Read and print the output in real-time
                     for line in process.stdout:
@@ -125,7 +122,7 @@ class BenchmarkTool(ABC):
             else:
                 # Start the subprocess and wait for it to finish
                 start_time = time.time()
-                result = subprocess.run(self.command, capture_output=False, text=True, check=True, env=env)
+                _ = subprocess.run(self.command, capture_output=False, text=True, check=True, env=env)
                 end_time = time.time()
                 elapsed_time = end_time - start_time
 
@@ -298,44 +295,6 @@ class newIORTool(BenchmarkTool):
     def parse_output(self, output):
         return "IOR no parsing yet."
 
-'''
-class test_mdtest_tool(BenchmarkTool):
-    pass
-    def setup_command(self, **params):
-        super().setup_command(**params)
-
-        self.command = ["mpirun"]
-
-        config_params = params.get('config')
-
-        mpi_ranks = params.get('mpi_ranks')
-        ranks_per_node = params.get('ranks_per_node')
-        files_per_rank = params.get('files_per_rank')
-        directory = params.get('directory')
-
-        # Required parameter: output file
-        if mpi_ranks:
-            self.command.extend(["-n", str(mpi_ranks)])
-        else:
-            raise ValueError("Number of MPI ranks must be specified (--mpi-ranks)")
-
-        self.command.append("--map-by")
-        self.command.append("node")
-        
-        if ranks_per_node:
-            self.command.extend(["-N", str(ranks_per_node)])
-        
-        self.command.append("--verbose")
-        self.command.append("mdtest")
-
-        not_iteratable = ['mpi_ranks', 'node_count', 'filename', 'config_options', 'command_extensions', 'job_note', 'platform_type', 'unit_restart', 'io_type', 'output_file', 'timed']
-
-        #test_repetition = params.get('test_repetition')
-        #offset = params.get('offset')
-        #write_into_file = params.get('write_data')
-        #read_from_file = params.get('read_data')
-#    pass
-'''
 
 class mdtestTool(BenchmarkTool):
     def setup_command(self, **params):
@@ -444,6 +403,11 @@ class FIOTool(BenchmarkTool):
 
     def parse_output(self, output):
         return {job['jobname']: {'Read BW': job['read']['bw'], 'Write BW': job['write']['bw']} for job in output['jobs']}
+
+
+    def __repr__(self):
+        pass
+        
 
 class IORTool(BenchmarkTool):
     def __init__(self, slurm_script_path):
