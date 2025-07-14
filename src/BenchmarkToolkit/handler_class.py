@@ -169,7 +169,6 @@ class test_ior_tool(BenchmarkTool):
         filename = config_params["filename"]
         ranks_per_node = params.get("ranks_per_node")
         output_file = params.get("output_file")
-        output_format = config_params
 
         # Required parameter: output file
         if mpi_ranks:
@@ -460,7 +459,8 @@ class FIOTool(BenchmarkTool):
         }
 
     def __repr__(self):
-        pass
+        # FIXME: Return actually useful string
+        return "FIOTool Command: " + " ".join(self.command)
 
 
 class IORTool(BenchmarkTool):
