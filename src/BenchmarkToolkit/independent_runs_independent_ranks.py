@@ -9,7 +9,6 @@ import sys
 import json
 from . import benchmark_tools
 from . import miscellaneous
-from .network_collect import network_counter_collection
 import time
 from mpi4py import MPI
 from .analyze_and_rebalance_load import log_and_analyze_data_points

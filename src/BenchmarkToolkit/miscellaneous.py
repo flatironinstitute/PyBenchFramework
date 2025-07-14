@@ -1,10 +1,9 @@
-import os, sys
+import os
+import sys
 from datetime import datetime
 import re
 import time
 import mmap
-import pathlib
-import fcntl
 import yaml
 import json
 import socket
@@ -72,7 +71,6 @@ def create_hostname_mapping(log_dir, node_count):
 def get_hostname_mapping(hostname, log_dir):
     log_path = f"{log_dir}/{hostname}-hostname_mapping.txt"
     mapped_hostname = ""
-    Err = 1
     hostname = socket.gethostname()
     hostname_mapped = ""
 
@@ -176,7 +174,7 @@ def load_ior_json_results(filename, log_dir):
             iops[f"{label1}"] = data["tests"][0]["Results"][0][0]["iops"]
             iops[f"{label2}"] = data["tests"][0]["Results"][0][1]["iops"]
 
-    except KeyError as e:
+    except KeyError as _:
         print(f"""{datetime.now().strftime('%b %d %H:%M:%S')} Issue with results for either:
         bw = data['tests'][0]['Results'][0][0]['bwMiB']
         iops = data['tests'][0]['Results'][0][0]['iops']
@@ -224,7 +222,7 @@ def count_lines_in_file(file_path):
 def count_lines(filename):
     with open(filename, "r") as file:
         with mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as m:
-            return sum(1 for line in iter(m.readline, b""))
+            return sum(1 for _ in iter(m.readline, b""))
 
 
 def insert_entry_and_check_completion(filename, hostname, total_node_count):
@@ -249,9 +247,6 @@ def insert_entry_and_check_completion(filename, hostname, total_node_count):
         how_long = stop_waiting - start_waiting
 
         if how_long > 10:
-            type_line_count = type(line_count)
-            type_node_count = type(total_node_count)
-            # print (f"{datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] waited too long. File ({filename}) line count is {line_count} and total node count is {total_node_count}... type line count is {type_line_count} type total node count {type_node_count}")
             break
 
 
@@ -403,6 +398,7 @@ def restart_ceph_unit(path):
 
 def get_config_params(config_file):
     # enabling classes in handler_class.py to read a list object containing dicts parsed from the input YAML files
+    config = {}
     if config_file:
         try:
             with open(config_file, "r") as opts_file:
@@ -410,7 +406,8 @@ def get_config_params(config_file):
         except yaml.YAMLError as e:
             print(f"Error loading YAML file: {e}")
         except FileNotFoundError as e:
-            print(f"File not found: {e}")
+            err_msg = f"File not found: {e}"
+            print(err_msg)
         except Exception as e:
             print(f"An unexpected error has occurred: {e}")
     else:
