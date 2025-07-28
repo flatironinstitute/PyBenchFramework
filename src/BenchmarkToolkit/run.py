@@ -59,17 +59,11 @@ def _prepare_environment(args):
 
 def main():
     args = args_handler.handle_arguments()
-    if "benchmark" not in args:
-        print("No benchmark specified. Please provide a benchmark name.")
-        print(f"Available benchmarks are: {_available_benchmarks}.")
-        return _finalize_and_fail()
-
-    if args["benchmark"] not in _benchmark_funcs.keys():
-        err_str = (
-            f"Invalid benchmark specified: {args['benchmark']}. "
+    if "benchmark" not in args or args["benchmark"] not in _benchmark_funcs.keys():
+        print(
+            f"Invalid or no benchmark specified. Please provide a benchmark name."
             f"Available benchmarks are: {_available_benchmarks}."
         )
-        print(err_str)
         return _finalize_and_fail()
 
     if MPI.COMM_WORLD.Get_rank() == 0:
