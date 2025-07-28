@@ -1,5 +1,6 @@
 import paramiko
 
+
 def execute_ssh_command(hostname, username, command):
     # Create SSH client
     ssh_client = paramiko.SSHClient()
@@ -7,19 +8,20 @@ def execute_ssh_command(hostname, username, command):
     # Automatically add host keys
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
+    output = ""
     try:
         # Connect to the SSH server
         ssh_client.connect(hostname, username=username)
 
         # Execute the command
-        stdin, stdout, stderr = ssh_client.exec_command(command)
+        _, stdout, _ = ssh_client.exec_command(command)
 
         # Read the output
         output = stdout.read().decode().strip()
 
         # Print output
-        #print("Output of the command:")
-        #print(output)
+        # print("Output of the command:")
+        # print(output)
 
     except paramiko.AuthenticationException:
         print("Authentication failed.")
@@ -28,5 +30,5 @@ def execute_ssh_command(hostname, username, command):
     finally:
         # Close the SSH connection
         ssh_client.close()
-    
+
     return output
