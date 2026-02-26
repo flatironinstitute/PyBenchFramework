@@ -8,14 +8,15 @@ unique_filename=0
 filename_format=__hostname__.$filenum
 group_reporting
 bs=__block_size__
-fsync=100
+fsync=20
 invalidate=1
-#iodepth=1
+iodepth=8
 time_based=1
 runtime=__time_var__
 overwrite=1
 numjobs=__number_of_jobs__
 ramp_time=20
+#rate_iops=8
 
 [__io_type_var__]
 rw=__io_type_var__

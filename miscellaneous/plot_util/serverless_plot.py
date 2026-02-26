@@ -191,6 +191,60 @@ def return_FIO_data(directory, title, block_size, optional_plot_block_size=None)
         nodes = []
     return node_count_list, bw_list, iops_list, processor_counts, node_list
 
+
+def return_FIO_job_results_objects(job_dir):
+
+    files = [f for f in os.listdir(job_dir) if re.search(r'[a-z]+[0-9]+_[0-9]+_[0-9]+_[0-9]+p_[0-9]+f_[0-9]+M.json', f)] 
+
+    if not files:
+        print(f"The file pattern {file_pattern} did not yield any results.")
+        return 0
+
+    class FIO_runner_ob():
+        def __init__(self, hostname, local_rank, node_count, job_count, fio_json_file):
+            self.hostname = hostname
+            self.local_rank = local_rank
+            self.node_count = node_count
+            self.job_count = job_count
+            self.fio_dict = None
+            self.fio_json_file = fio_json_file
+
+        def load_FIO_json(self):
+            try:
+                with open(self.fio_json_file, 'r') as f:
+                    self.fio_dict = json.load(f)
+            except FileNotFoundError as e:
+                print(f"json file {self.fio_json_file} not found. Exiting...")
+
+    FIO_runner_list = []
+
+    for filename in files:
+        hostname = re.split('_', filename)[0]
+        local_rank = re.split('_', filename)[1]
+        node_count = re.split('_', filename)[2]
+        job_count = re.split('p', re.split('_', filename)[3])[0]
+
+        file_path = f"{job_dir}/{filename}"
+        FIO_runner_list.append(FIO_runner_ob(hostname, local_rank, node_count, job_count, file_path))
+
+    return FIO_runner_list
+
+def updated_FIO_plotting(job_dir_list):
+    # Each element in job_dir_list is a list of one or more job output directories 
+
+    for n_jobs in job_dir_list:
+        results_list = []
+
+        print(n_jobs)
+        print(type(n_jobs))
+        for job in n_jobs:
+            # Each result is a list of FIO runner objects. Each object in the list is of class FIO_runner_ob and should have all elements of that class except for fio_dict 
+            results_list.append(return_FIO_job_results_objects(job))
+
+            print(len(results_list))
+
+
+
 def mod_return_FIO_data(directory, title, block_size, benchmark, optional_plot_block_size=None):
     plot_title = []
     tmp_title = ''

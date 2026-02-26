@@ -103,7 +103,7 @@ def get_hostname_mapping(hostname,log_dir):
         '''
     return mapped_hostname
 
-def reset_file_contents(original_file_contents, args, job_count, single_block_size, log_dir, local_rank):
+def reset_file_contents(original_file_contents, args, job_count, single_block_size, log_dir, local_rank, variability):
 
     #get mapping of hostname to generic index entry
     hostname = socket.gethostname()
@@ -118,6 +118,18 @@ def reset_file_contents(original_file_contents, args, job_count, single_block_si
     file_contents = file_contents.replace("__time_var__",f"{args['time']}")
     file_contents = file_contents.replace("__hostname__",f"{mapped_hostname}.{local_rank}")
     file_contents = file_contents.replace("__file_size__",f"{args['file_size']}")
+
+    if variability == None:
+        pass
+    else:
+        rate_string = re.search(r"rate_iops=\d+", file_contents)
+        if rate_string:
+            rate_value = int(re.split("=", rate_string.group(0))[1])
+            #rate_value -= max(2, round(rate_value/10))
+            rate_value -= 1
+            rate_value = max(1, rate_value)
+            print(f"Current rate is: {rate_value}")
+            file_contents = re.sub(r"rate=\d+", "rate={}".format(rate_value), file_contents)
 
     return file_contents
 
@@ -192,8 +204,14 @@ def load_json_results(filename):
         jobname = "write"
     bw = data['jobs'][0][jobname]['bw']
     iops = data['jobs'][0][jobname]['iops']
+    lat_ns =  { "min" : data['jobs'][0][jobname]['lat_ns']['min'],
+            "max" : data['jobs'][0][jobname]['lat_ns']['max'],
+            "mean" : data['jobs'][0][jobname]['lat_ns']['mean'],
+            "stddev" : data['jobs'][0][jobname]['lat_ns']['stddev'],
+            "N" : data['jobs'][0][jobname]['lat_ns']['N'],
+            }
 
-    return bw, iops
+    return bw, iops, lat_ns
 
 def count_lines_in_file(file_path):
     try:
@@ -291,9 +309,9 @@ def restart_ceph_unit(path):
     
     hostname = socket.gethostname()
     
-    m = re.match('/mnt/cephtest[-_\w]*$', path)
+    m = re.match('/mnt/ceph[-_\w]*$', path)
     if not m:
-        print("ERROR: Remount path must be /mnt/cephtest...")
+        print("ERROR: Remount path must be /mnt/ceph...")
         sys.exit(1)
     
     if not os.path.exists(path):

@@ -1,4 +1,5 @@
-from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data, convert_mdtest_data, read_mdtest_json_data,plot_and_compare_mdtest, convert_mdtest_data_in_parts
+from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data, convert_mdtest_data, read_mdtest_json_data,plot_and_compare_mdtest, convert_mdtest_data_in_parts 
+from plot_util.testing_llm_plotting import updated_FIO_plotting
 from plot_util.text_based_comparison import *
 import sys
 import re
@@ -122,10 +123,7 @@ def full_paths(all_job_list, benchmark, block_size):
             all_result_list.append(read_mdtest_json_data(list_instance))
     return all_result_list
 
-def extract_paths_from_file(filepath, one_path):
-    
-    first_job_list = []
-    second_job_list = []
+def extract_paths_from_file(filepath):
     
     all_job_list = []
 
@@ -137,19 +135,13 @@ def extract_paths_from_file(filepath, one_path):
                     tmp_line = remove_quotes.replace(' ','')
                     tmp_line = tmp_line.replace("\n",'')
 
-                    if one_path:
-                        all_job_list.append(tmp_line)
-                    else:
-                        all_job_list.append(re.split(',', tmp_line))
+                    all_job_list.append(re.split(',', tmp_line))
     except FileNotFoundError:
         print(f"File not found {filepath}")
         sys.exit()
     except IndexError:
         print(f"One of the lines in the file does not follow the format <first path> <second path>. Please ensure each line contains two paths, seperated by a comma.")
         sys.exit()
-
-    if one_path:
-        return first_job_list
 
     return all_job_list
 
@@ -174,21 +166,22 @@ if __name__ == "__main__":
     if args['block_size']:
         block_size=args['block_size']
     else:
-        if benchmark.upper() == "IOR" or benchmark.lower() == "ior" or benchmark.upper() == "FIO" or benchmark.lower() =="fio":
+        if benchmark.upper() == "IOR" or benchmark.upper() == "FIO" or benchmark.upper == "UPDATEDFIO":
             print("Block size not provided! Please provide the block size when running this script for FIO or IOR!")
             sys.exit()
         else:
             block_size = None
 
 
-    if 'file' in args and args['file'] is not None and not args['one_path']:
-        all_job_list = extract_paths_from_file(args['file'], 0)
-    elif 'file' in args and args['file'] is not None and args['one_path']:
-        first_job_list = extract_paths_from_file(args['file'], args['one_path'])
-
+    if 'file' in args and args['file'] is not None:
+        all_job_list = extract_paths_from_file(args['file'])
     elif 'paths' in args.keys():
         first_job_list.append(re.split(',', args['paths'])[0])
         second_job_list.append(re.split(',', args['paths'])[1])
+
+    if benchmark.upper() == "UPDATEDFIO":
+        updated_FIO_plotting(all_job_list, block_size, output_path)
+        sys.exit() 
 
     full_or_not = args['full_paths']
     print(args['comparison'])

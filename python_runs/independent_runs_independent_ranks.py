@@ -141,7 +141,7 @@ def independent_ranks(args, PyBench_root_dir):
                     file_count = job_count
 
                     #Reset file contents for FIO config file
-                    file_contents = miscellaneous.reset_file_contents(original_file_contents, args, 1, block_size,log_dir,local_rank)
+                    file_contents = miscellaneous.reset_file_contents(original_file_contents, args, 1, block_size,log_dir,local_rank, None)
                     fio_job_config = f"{PyBench_root_dir}/examples/test_files/{job_number}_{hostname}_{local_rank}_{node_iter}n_{job_count}p_{file_count}f_{block_size}_{args['io_type']}.fio"
                     with open(fio_job_config, 'w') as file:
                         file.write(file_contents)
@@ -222,12 +222,12 @@ def independent_ranks(args, PyBench_root_dir):
                     
                     iteration_comm.Barrier()
 
-                    #print(starting_statement)
-                    #print(ending_statement)
+                    print(starting_statement)
+                    print(ending_statement)
                     
                     if rank == 0:
-                        #log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name],start_end_times_list)
-                        log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name])
+                        no_matter = log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name],start_end_times_list)
+                        #log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name])
                     #network_counter_collection.stop_thread = True
                     #background_thread.join()
                     #end_time = time.time()

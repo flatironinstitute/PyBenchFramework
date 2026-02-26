@@ -8,7 +8,7 @@ import sys
 block_sizes = ["4M"]
 nodes = [24, 16, 8, 4, 2]
 #proc = [16, 8, 4, 2]
-proc = [16]
+proc = [16,8,4,2]
 log_dir = sys.argv[1] 
 #log_dir = "../results/read/Fi5-ec63-ssd-kernel/000000"
 host_list = []
@@ -29,10 +29,10 @@ for node_iter in nodes:
                     uncombined_json_log_file = f"{log_dir}/uncombined_{node_iter}_{job_count}p_{block_size}.tmp"
 
                     if os.path.exists(json_log_file):
-                        bw, iops = miscellaneous.load_json_results(json_log_file)
+                        bw, iops, lat_ns = miscellaneous.load_json_results(json_log_file)
 
                         with open(uncombined_json_log_file, 'a') as file:
-                            file.write(f"{hostname}, bw: {bw}, iops: {iops}, local rank: {local_rank}\n")
+                            file.write(f"{hostname}, bw: {bw}, iops: {iops}, local rank: {local_rank}, latency_ns: {lat_ns} \n")
                     else:
                         print(f"[{hostname}] {local_rank} FIO JSON LOG FILE DOESN'T EXIST!!!")
                     #    sys.exit()
