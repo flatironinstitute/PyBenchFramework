@@ -57,6 +57,7 @@ def handle_arguments():
     parser.add_argument('--hosts-file', type=str, help="Path to the intial hosts file which contains all hosts (At least FIO servers) involved.")
     parser.add_argument('--no-scrub', type=bool, help="(Ceph only) set noscrub and nodeepscrub flags on the ceph system. Requires passwordless SSH to the Ceph servers")
     parser.add_argument('--template-path', type=str, help="The path to the FIO template")
+    parser.add_argument('--optimize-rate', type=str, help="Allow the wrapper to manipulate iops rate to reduce test variability")
 
     args = parser.parse_args()
     args_dict = vars(args)

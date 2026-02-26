@@ -151,8 +151,11 @@ def independent_ranks(args, PyBench_root_dir):
                     while difference_tuple[0] >= .05 and iteration_retries <= 3:
                         iteration_retries += 1
 
-                        global_rank = my_node_count * local_rank 
-                        file_count = job_count
+                    #Reset file contents for FIO config file
+                    file_contents = miscellaneous.reset_file_contents(original_file_contents, args, 1, block_size,log_dir,local_rank, None)
+                    fio_job_config = f"{PyBench_root_dir}/examples/test_files/{job_number}_{hostname}_{local_rank}_{node_iter}n_{job_count}p_{file_count}f_{block_size}_{args['io_type']}.fio"
+                    with open(fio_job_config, 'w') as file:
+                        file.write(file_contents)
 
                         #open uncombined file to truncate it if it exists
                         uncombined_json_log_file = f"{log_dir}/uncombined_{node_iter}_{job_count}p_{block_size}.tmp"
@@ -172,11 +175,32 @@ def independent_ranks(args, PyBench_root_dir):
 
                         iteration_comm.Barrier()  # Wait for all processes to reach this point
 
-                        start_time = time.time()
-                        fio_ob_dict[fio_ob_name].run()
-                        end_time = time.time()
+                    print(starting_statement)
+                    print(ending_statement)
+                    
+                    if rank == 0:
+                        no_matter = log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name],start_end_times_list)
+                        #log_and_analyze_data_points(log_dir, fio_ob_dict[fio_ob_name])
+                    #network_counter_collection.stop_thread = True
+                    #background_thread.join()
+                    #end_time = time.time()
 
-                        iteration_comm.Barrier()
+                    #elapsed_time = end_time - start_time
+                    #print(f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] Job num: {job_count}, node count: {node_iter}. Iteration is finished. {hostname} [s-{start_time}], [e-{end_time}, el-{elapsed_time}]")
+                    
+                    json_log_file = f"{log_dir}/{hostname}_{local_rank}_{node_iter}_{job_count}p_{file_count}f_{block_size}.json"
+                    uncombined_json_log_file = f"{log_dir}/uncombined_{node_iter}_{job_count}p_{block_size}.tmp"
+                    #first_barrier_file = f"{log_dir}/barrier_file_1_{iteration_count}.txt"
+                    #second_barrier_file = f"{log_dir}/barrier_file_2_{iteration_count}.txt"
+                    
+                    if local_rank == 1:
+                        if 'unit_restart' in args:
+                            if args['unit_restart'] == 1:
+                                pattern = '/'
+                                split_dir = re.split(pattern, args['directory'])
+                                cephtest_root = '/'+split_dir[1]+'/'+split_dir[2]
+                                miscellaneous.restart_ceph_unit(cephtest_root)
+                                print(f"restarting the daemon on {hostname} from rank {rank}")
 
                         starting_statement = f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] starting fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()} \n"
                         ending_statement = f"{datetime.datetime.now().strftime('%b %d %H:%M:%S')} [{hostname}] stopping fio Job num: {job_count}, node count: {node_iter}, local rank {local_rank}, node count {my_node_count}, IO type {args['io_type']} {time.time()} \n"

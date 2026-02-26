@@ -1,0 +1,8 @@
+python_runs/__pycache__
+python_runs/IOR_config
+miscellaneous/plot_util/__pycache__
+examples/test_files
+logs
+tmp
+results
+results_tar

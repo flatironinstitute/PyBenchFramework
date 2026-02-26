@@ -4,7 +4,8 @@ import benchmark_tools
 import args_handler
 import miscellaneous
 from independent_runs import serverless_fio
-from independent_runs_independent_ranks import independent_ranks
+#from independent_runs_independent_ranks import independent_ranks
+from testing_optimization import independent_ranks
 from multi_node import server_fio
 from mdtest_wrapper import wrap_mdtest 
 from IOR_wrapper import wrap_IOR

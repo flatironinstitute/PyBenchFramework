@@ -1,0 +1,16 @@
+slurm_job_number: 
+block_size: "4M,4K"
+directory: /mnt/cephtest-fi5/test-rep3-hdd/skrit/fio 
+time: 10
+io_type: write
+platform_type: Fi5-rep3-hdd-fuse
+split_hosts_file: 0
+job_number: '16,8,4,2'
+node_count: 24,16,8,4,2
+hosts_file:
+no_scrub: 0
+unit_restart: 1
+job_note: "Testing fi5 Quincy upgrade from RHEL8 to RHEL9. Plot Title: Fi5 Quincy RHEL9, HDD,rep3, reef fuse,"
+template_path: /mnt/home/skrit/Documents/testing_clones/clone1/PyBenchFramework/examples/template/template.fio
+file_size: "40G"
+wait_for_others: 1

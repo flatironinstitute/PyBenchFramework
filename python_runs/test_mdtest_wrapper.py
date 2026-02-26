@@ -140,8 +140,8 @@ def test_wrap_mdtest(args, PyBench_root_dir):
                                     print("Warning!!! This run took less than 10 seconds!, not sleeping for now...")
                                     #time.sleep(10)
                                 
-                                #create/delete snapshots
-                                '''
+                                #create/delete snapshots SECTION
+                                
                                 if command_extent_element == "YuC":
                                     if not os.path.exists(f"{directory}/.snap/test_snapshots"):
                                         result = subprocess.run(f"mkdir {directory}/.snap/test_snapshots", shell=True, capture_output=False, text=True, check=True)
@@ -155,8 +155,8 @@ def test_wrap_mdtest(args, PyBench_root_dir):
                                         result = subprocess.run(f"rmdir {directory}/.snap/test_snapshots", shell=True, capture_output=False, text=True, check=True)
                                     else:
                                         print("{datetime.now().strftime('%b %d %H:%M:%S')} snapshot doesn't exist, something went wrong.")
-                                '''
-                                #--------
+                                
+                                #-------- snapshots SECTION ends here
 
                             # Iterate through arguments that have still not been used, decrement temporary counters
                             for key, value in result_dict.items():
