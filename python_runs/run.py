@@ -11,6 +11,7 @@ from mdtest_wrapper import wrap_mdtest
 from IOR_wrapper import wrap_IOR
 from testIOR_wrapper import test_wrap_IOR
 from test_mdtest_wrapper import test_wrap_mdtest
+from metadata_tar import test_wrap_tar
 
 var_name = "PyBench_root_dir"
 
@@ -37,3 +38,5 @@ elif args['benchmark'] == 'newIORTool':
     wrap_IOR(args, PyBench_root_dir)
 elif args['benchmark'] =='testIORTool':
     test_wrap_IOR(args, PyBench_root_dir)
+elif args['benchmark'] == 'metadata_tar':
+    test_wrap_tar(args, PyBench_root_dir)

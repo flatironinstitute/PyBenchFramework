@@ -1,4 +1,4 @@
-from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data, convert_mdtest_data, read_mdtest_json_data,plot_and_compare_mdtest, convert_mdtest_data_in_parts 
+from plot_util.serverless_plot import plot_serverless_FIO, return_FIO_data, plot_and_compare, mod_return_FIO_data, convert_mdtest_data, read_mdtest_json_data,plot_and_compare_mdtest, convert_mdtest_data_in_parts, metadata_tar_plotting 
 from plot_util.testing_llm_plotting import updated_FIO_plotting
 from plot_util.text_based_comparison import *
 import sys
@@ -182,6 +182,9 @@ if __name__ == "__main__":
     if benchmark.upper() == "UPDATEDFIO":
         updated_FIO_plotting(all_job_list, block_size, output_path)
         sys.exit() 
+    elif benchmark.upper() == "METADATATAR":
+        metadata_tar_plotting(all_job_list, output_path)
+        sys.exit()
 
     full_or_not = args['full_paths']
     print(args['comparison'])

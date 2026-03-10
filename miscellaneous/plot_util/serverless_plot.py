@@ -747,3 +747,59 @@ def read_mdtest_json_data(job_directory):
 
     #print(all_result_list)
     return one_job_result_list 
+
+def metadata_tar_plotting(all_job_list, output_dir):
+    
+    for job_list in all_job_list:
+
+        for job in job_list:
+            collect_job_info = []
+            
+            json_files = glob.glob(job + "/*.json")
+            for f in json_files:
+                with open (f, 'r') as jf:
+                    collect_job_info.append(json.load(jf))    
+
+            job_df = pd.DataFrame(collect_job_info)
+            #print(job_df)
+            job_df['files_per_second'] = 99116 / job_df['elapsed_time']
+
+            combined_job_df = job_df.groupby(['node count', 'job count']).agg(
+                    mean_start_time=('start_time', 'mean'),
+                    mean_end_time=('end_time', 'mean'),
+                    mean_elapsed_time=('elapsed_time', 'mean'),
+                    mean_files_per_second=('files_per_second', 'mean'),
+                    )
+            #print(combined_job_df)
+            #combined_job_df['files_per_second'] =  99116 / combined_job_df['mean_elapsed_time']
+
+            # ---- normalize to columns ----
+            plot_df = combined_job_df.copy()
+            if isinstance(plot_df.index, pd.MultiIndex):
+                plot_df = plot_df.reset_index()
+            print(plot_df)
+
+            # ---- pivot so each job count becomes a series (line) ----
+            # x = node count, each column = job count, y = mean_elapsed_time
+            wide = plot_df.pivot(index="node count", columns="job count", values="mean_files_per_second")
+
+            # Sort x so lines connect in node-count order
+            wide = wide.sort_index()  # ascending
+            # If you want the visual order 24 -> ... -> 1 left-to-right, we'll invert the axis later.
+
+            # ---- plot ----
+            fig, ax = plt.subplots(figsize=(8, 5))
+
+            for jc in wide.columns.sort_values():
+                ax.plot(wide.index, wide[jc], marker="o", linewidth=2, label=f"{jc}")
+
+            ax.set_xlabel("Node count")
+            ax.set_ylabel("Files per second")
+            ax.legend(title="Job count", frameon=True)
+            ax.grid(True, alpha=0.3)
+
+            # Optional: show bigger node counts on the left (24 ... 1), matching your description
+            #ax.invert_xaxis()
+
+            fig.tight_layout()
+            fig.savefig(f"{output_dir}/metadata_tar_results.svg", format="svg")

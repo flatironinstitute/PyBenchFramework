@@ -59,6 +59,10 @@ def handle_arguments():
     parser.add_argument('--template-path', type=str, help="The path to the FIO template")
     parser.add_argument('--optimize-rate', type=str, help="Allow the wrapper to manipulate iops rate to reduce test variability")
 
+    # tar portion
+    parser.add_argument('--file-path', type=str, help="Full Tar archive path (including file name)")
+    parser.add_argument('--tar-operation', type=str, help="Which tar operation to execute ('compress', or 'extract')")
+
     args = parser.parse_args()
     args_dict = vars(args)
 

@@ -137,7 +137,38 @@ class BenchmarkTool(ABC):
             sys.stdout.flush()
             sys.stderr.flush()
 
+class metadata_tar(BenchmarkTool):
 
+    def setup_command(self, **params):
+        self.command = [
+                "tar",
+                ]
+        self.params = params
+        
+        # Full path to the tar archive
+        file_path = params.get('file_path')
+        # Directory to/from which the tar operations will execute
+        directory = params.get('directory')
+        # Operation to execute (either 'compress' or 'extract')
+        tar_operation = params.get('tar_operation')
+        # Output file
+        output_file = params.get('output_file')
+
+        # Append appropriate flags to the 'tar' command depending on the type of operation
+        if tar_operation == "extract":
+            self.command.append('-xvf')
+        elif tar_operation == "compress":
+            self.command.append('-cvf')
+        else:
+            raise ValueError ( "'tar_operation' argument is required and acceptable values are 'compress', or 'extract'" )
+
+        self.command.append(file_path)
+        self.command.append('-C')
+        self.command.append(directory)
+
+    def parse_output(self, output):
+        return "metadat_tar no parsing yet."
+        
 class test_ior_tool(BenchmarkTool):
 
     def setup_command(self, **params):
