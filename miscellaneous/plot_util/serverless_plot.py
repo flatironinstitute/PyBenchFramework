@@ -768,7 +768,7 @@ def metadata_tar_plotting(all_job_list, output_dir):
                     mean_start_time=('start_time', 'mean'),
                     mean_end_time=('end_time', 'mean'),
                     mean_elapsed_time=('elapsed_time', 'mean'),
-                    mean_files_per_second=('files_per_second', 'mean'),
+                    mean_files_per_second=('files_per_second', 'sum'),
                     )
             #print(combined_job_df)
             #combined_job_df['files_per_second'] =  99116 / combined_job_df['mean_elapsed_time']

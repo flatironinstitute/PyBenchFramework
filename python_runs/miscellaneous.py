@@ -1,4 +1,5 @@
 import os,sys
+import glob
 from datetime import datetime
 import re
 import time
@@ -10,32 +11,6 @@ import json
 import socket
 import subprocess
 from cryptography.fernet import Fernet
-
-def replace_fsync_value(file_contents, difference_tuple):
-    #difference tuple is difference_ratio, new_fsync_value
-    new_fsync_value = int(difference_tuple[1])
-    if new_fsync_value >= 1:
-        # 1) Find the line and capture its numeric value
-        m = re.search(r'^fsync=\s*(\d+)', file_contents, flags=re.MULTILINE)
-        if not m:
-            raise ValueError("No fsync= line found")
-        
-        current = int(m.group(1))               # the captured number
-        #new_val = int(current * (1 - ratio) - 1)
-        #if new_val <= 1:
-        #    new_val = 1
-
-        # 2) Build replacement line
-        new_line = f"fsync={new_fsync_value}"
-
-        print(new_line)
-        print(file_contents)
-
-        # 3) Replace only that line (safer than .replace on the whole string)
-        file_contents = re.sub(r'^fsync=\s*\d+', new_line,
-                file_contents, count=1, flags=re.MULTILINE)
-
-    return file_contents
 
 def ensure_log_directory_exists(directory, createdir):
     if not os.path.exists(directory):
@@ -134,10 +109,9 @@ def reset_file_contents(original_file_contents, args, job_count, single_block_si
     #get mapping of hostname to generic index entry
     hostname = socket.gethostname()
     mapped_hostname = get_hostname_mapping(hostname,log_dir)
-    
+
     # Reset file_contents to the original template for each iteration
     file_contents = original_file_contents
-    file_contents = replace_fsync_value(file_contents, difference_tuple)
     file_contents = file_contents.replace("__block_size__", single_block_size)
     file_contents = file_contents.replace("__number_of_jobs__", f"{job_count}")
     file_contents = file_contents.replace("__dir_var__", args['directory'])
@@ -159,6 +133,7 @@ def reset_file_contents(original_file_contents, args, job_count, single_block_si
             file_contents = re.sub(r"rate=\d+", "rate={}".format(rate_value), file_contents)
 
     return file_contents
+
 
 def load_ior_json_results(filename, log_dir):
     data = {}
@@ -434,3 +409,49 @@ def get_config_params(config_file):
                 print(f"{i}")
 
     return config
+
+def check_previous_job(args, nodes, block_sizes, proc):
+    prev_job = args.get('incomplete_job')
+
+    #"{log_dir}/{hostname}_{local_rank}_{node_iter}_{job_count}p_{file_count}f_{block_size}.json"
+
+    combo = {}
+
+    def load_FIO_json(fio_json_file):
+        try:
+            with open(fio_json_file, "r") as f:
+                fio_dict = json.load(f)
+            return 0
+        except FileNotFoundError:
+            print(f"[ERROR] JSON file not found: {fio_json_file}")
+            fio_dict = None
+            return 1
+        except json.JSONDecodeError:
+            print(f"[ERROR] Could not decode JSON: {fio_json_file}")
+            fio_dict = None
+            return 1
+
+
+    for node_iter in nodes:
+        for block_size in block_sizes:
+            for job_count in proc:
+
+                combo[f"{node_iter}_{block_size}_{job_count}"] = True 
+               
+                json_files = glob.glob(f"{prev_job}/*_{node_iter}_{job_count}p_{job_count}f_{block_size}.json") 
+
+                expected_file_count = node_iter * job_count
+                
+                if (len(json_files)-1) == expected_file_count:
+                    for json_file in json_files:
+                        skip = load_FIO_json(json_file)
+                        if skip == 0:
+                            pass
+                        else:
+                            combo[f"{node_iter}_{block_size}_{job_count}"] = False
+                else:
+                    print(f"Job file count does not equal expected count!. Count is {len(json_files)-1} while expected count is {expected_file_count}")
+                    combo[f"{node_iter}_{block_size}_{job_count}"] = False
+
+    return combo
+

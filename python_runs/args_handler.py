@@ -58,6 +58,7 @@ def handle_arguments():
     parser.add_argument('--no-scrub', type=bool, help="(Ceph only) set noscrub and nodeepscrub flags on the ceph system. Requires passwordless SSH to the Ceph servers")
     parser.add_argument('--template-path', type=str, help="The path to the FIO template")
     parser.add_argument('--optimize-rate', type=str, help="Allow the wrapper to manipulate iops rate to reduce test variability")
+    parser.add_argument('--incomplete-job', type=str, help="Provide an incomplete job that has some iterations but not all.")
 
     # tar portion
     parser.add_argument('--file-path', type=str, help="Full Tar archive path (including file name)")
