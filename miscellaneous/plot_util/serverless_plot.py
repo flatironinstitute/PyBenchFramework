@@ -752,7 +752,12 @@ def metadata_tar_plotting(all_job_list, output_dir):
     
     for job_list in all_job_list:
 
+
         for job in job_list:
+            fig, axs = plt.subplots(1, 3, figsize=(24, 7), sharey=False)
+
+            axs = axs.flatten()  # Flatten the 2D array into a 1D array for easy indexing
+
             collect_job_info = []
             
             json_files = glob.glob(job + "/*.json")
@@ -762,13 +767,23 @@ def metadata_tar_plotting(all_job_list, output_dir):
 
             job_df = pd.DataFrame(collect_job_info)
             #print(job_df)
-            job_df['files_per_second'] = 99116 / job_df['elapsed_time']
+            job_df['extract_files_per_second'] = 99116 / job_df['extract_elapsed_time']
+            job_df['compress_files_per_second'] = 99116 / job_df['compress_elapsed_time']
+            job_df['delete_files_per_second'] = 99116 / job_df['delete_elapsed_time']
 
             combined_job_df = job_df.groupby(['node count', 'job count']).agg(
-                    mean_start_time=('start_time', 'mean'),
-                    mean_end_time=('end_time', 'mean'),
-                    mean_elapsed_time=('elapsed_time', 'mean'),
-                    mean_files_per_second=('files_per_second', 'sum'),
+                    mean_extract_start_time=('extract_start_time', 'mean'),
+                    mean_extract_end_time=('extract_end_time', 'mean'),
+                    mean_extract_elapsed_time=('extract_elapsed_time', 'mean'),
+                    mean_extract_files_per_second=('extract_files_per_second', 'sum'),
+                    mean_compress_start_time=('compress_start_time', 'mean'),
+                    mean_compress_end_time=('compress_end_time', 'mean'),
+                    mean_compress_elapsed_time=('compress_elapsed_time', 'mean'),
+                    mean_compress_files_per_second=('compress_files_per_second', 'sum'),
+                    mean_delete_start_time=('delete_start_time', 'mean'),
+                    mean_delete_end_time=('delete_end_time', 'mean'),
+                    mean_delete_elapsed_time=('delete_elapsed_time', 'mean'),
+                    mean_delete_files_per_second=('delete_files_per_second', 'sum'),
                     )
             #print(combined_job_df)
             #combined_job_df['files_per_second'] =  99116 / combined_job_df['mean_elapsed_time']
@@ -777,29 +792,85 @@ def metadata_tar_plotting(all_job_list, output_dir):
             plot_df = combined_job_df.copy()
             if isinstance(plot_df.index, pd.MultiIndex):
                 plot_df = plot_df.reset_index()
-            print(plot_df)
+            #print(plot_df)
 
             # ---- pivot so each job count becomes a series (line) ----
             # x = node count, each column = job count, y = mean_elapsed_time
-            wide = plot_df.pivot(index="node count", columns="job count", values="mean_files_per_second")
+            wide = plot_df.pivot(index="node count", columns="job count", values="mean_extract_files_per_second")
 
             # Sort x so lines connect in node-count order
             wide = wide.sort_index()  # ascending
             # If you want the visual order 24 -> ... -> 1 left-to-right, we'll invert the axis later.
 
             # ---- plot ----
-            fig, ax = plt.subplots(figsize=(8, 5))
+            #fig, ax = plt.subplots(figsize=(8, 5))
+
+            ax = axs[0]
+            ax.set_title("Archive extractions")
 
             for jc in wide.columns.sort_values():
                 ax.plot(wide.index, wide[jc], marker="o", linewidth=2, label=f"{jc}")
 
             ax.set_xlabel("Node count")
-            ax.set_ylabel("Files per second")
+            ax.set_ylabel("File extractions per second")
             ax.legend(title="Job count", frameon=True)
             ax.grid(True, alpha=0.3)
 
             # Optional: show bigger node counts on the left (24 ... 1), matching your description
             #ax.invert_xaxis()
 
-            fig.tight_layout()
-            fig.savefig(f"{output_dir}/metadata_tar_results.svg", format="svg")
+            '''
+            job_df = pd.DataFrame(collect_job_info)
+
+            job_df['files_per_second'] = 99116 / job_df['compress_elapsed_time']
+
+            combined_job_df = job_df.groupby(['node count', 'job count']).agg(
+                    mean_start_time=('compress_start_time', 'mean'),
+                    mean_end_time=('compress_end_time', 'mean'),
+                    mean_elapsed_time=('compress_elapsed_time', 'mean'),
+                    mean_files_per_second=('files_per_second', 'sum'),
+                    )
+            '''
+            # ---- pivot so each job count becomes a series (line) ----
+            # x = node count, each column = job count, y = mean_elapsed_time
+            wide = plot_df.pivot(index="node count", columns="job count", values="mean_compress_files_per_second")
+
+            # Sort x so lines connect in node-count order
+            wide = wide.sort_index()  # ascending
+            # If you want the visual order 24 -> ... -> 1 left-to-right, we'll invert the axis later.
+
+            # ---- plot ----
+            #fig1, ax1 = plt.subplots(figsize=(8, 5))
+            ax1 = axs[1]
+            ax1.set_title("Directory archival to /dev/null")
+
+            for jc in wide.columns.sort_values():
+                ax1.plot(wide.index, wide[jc], marker="o", linewidth=2, label=f"{jc}")
+
+            ax1.set_xlabel("Node count")
+            ax1.set_ylabel("Files per second")
+            ax1.legend(title="Job count", frameon=True)
+            ax1.grid(True, alpha=0.3)
+
+            # ---- pivot so each job count becomes a series (line) ----
+            # x = node count, each column = job count, y = mean_elapsed_time
+            wide = plot_df.pivot(index="node count", columns="job count", values="mean_delete_files_per_second")
+
+            # Sort x so lines connect in node-count order
+            wide = wide.sort_index()  # ascending
+            # If you want the visual order 24 -> ... -> 1 left-to-right, we'll invert the axis later.
+
+            # ---- plot ----
+            #fig1, ax2 = plt.subplots(figsize=(8, 5))
+            ax2 = axs[2]
+            ax2.set_title("File removal")
+
+            for jc in wide.columns.sort_values():
+                ax2.plot(wide.index, wide[jc], marker="o", linewidth=2, label=f"{jc}")
+
+            ax2.set_xlabel("Node count")
+            ax2.set_ylabel("File deletions per second")
+            ax2.legend(title="Job count", frameon=True)
+            ax2.grid(True, alpha=0.3)
+            plt.tight_layout()
+            plt.savefig(f"{output_dir}/metadata_tar_results.svg", format="svg")

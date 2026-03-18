@@ -1,7 +1,10 @@
 python_runs/__pycache__
 python_runs/IOR_config
+python_runs/archive
 miscellaneous/plot_util/__pycache__
+miscellaneous/__pycache__
 examples/test_files
+examples/template
 logs
 tmp
 results

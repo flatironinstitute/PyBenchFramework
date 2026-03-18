@@ -162,9 +162,13 @@ class metadata_tar(BenchmarkTool):
         else:
             raise ValueError ( "'tar_operation' argument is required and acceptable values are 'compress', or 'extract'" )
 
+    
         self.command.append(file_path)
-        self.command.append('-C')
+        if tar_operation == 'extract':
+            self.command.append('-C')
         self.command.append(directory)
+
+        print(self.command)
 
     def parse_output(self, output):
         return "metadat_tar no parsing yet."

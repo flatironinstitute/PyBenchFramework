@@ -62,7 +62,7 @@ def handle_arguments():
 
     # tar portion
     parser.add_argument('--file-path', type=str, help="Full Tar archive path (including file name)")
-    parser.add_argument('--tar-operation', type=str, help="Which tar operation to execute ('compress', or 'extract')")
+    parser.add_argument('--tar-operations', type=str, help="Which tar operation to execute ('compress' and/or 'extract')")
 
     args = parser.parse_args()
     args_dict = vars(args)
